@@ -10,14 +10,13 @@
 #define F_CPU 16000000
 #include <util/delay.h>
 #include "GUI.h"
-//#include "LCD_8544.h"
 
 MainController_obj Moco;
 
 int main(void)
 {
+	//GUI_obj GUI;
 	
-	GUI_obj GUI;
 	GUI.Begin();
 
 	

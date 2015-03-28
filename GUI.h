@@ -28,8 +28,10 @@ struct HID_Event{
 };*/
 
 //One item in the menu
+
 class MenuItem_obj{
 public:
+	MenuItem_obj();
 	MenuItem_obj(char *button_label);
 	MenuItem_obj(char *button_label, bool *button_function);
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
@@ -49,7 +51,7 @@ public:
 	//char Text[];
 	//void *targetFunction(HID_Input userInput);
 	MenuPage_obj();
-	MenuPage_obj(MenuItem_obj *Items, uint8_t listSize);
+	MenuPage_obj(MenuItem_obj *Items, uint8_t listLength);
 	
 	uint8_t CursorPosition; //user controlled
 	uint8_t DrawPosition; //which MenuItem is drawn first
@@ -63,9 +65,9 @@ private:
 };
 
 class GUI_obj {
-	
 public:
 	GUI_obj();
+	GUI_obj(MenuPage_obj *Pages, uint8_t listLength)
 	void Begin();
 	void CheckHID(); //check human input devices 
 	void DrawScreen();
@@ -83,6 +85,8 @@ private:
 
 	
 };
+
+extern GUI_obj GUI;
 
 //Main Menu
 /*

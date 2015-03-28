@@ -13,10 +13,14 @@
 #include "LCD_8544.h"
 
 LCD_8544 Display;
+GUI_obj GUI;
 
 uint8_t CurrentPage = 0;
 
 //********************* MENU ITEMS ****************************
+MenuItem_obj::MenuItem_obj(){
+	
+};
 
 MenuItem_obj::MenuItem_obj(char *button_label){
 	this->Label = button_label;
@@ -27,6 +31,7 @@ MenuItem_obj::MenuItem_obj(char *button_label, bool *button_function){
 };
 
 void MenuItem_obj::Draw(){
+	/*
 	//Display.Write(Label);
 	switch(Type){
 		case BUTTON:
@@ -43,6 +48,7 @@ void MenuItem_obj::Draw(){
 		
 	}
 	//Display.Write();
+	*/
 };
 
 //********************* MENU PAGES ****************************
@@ -50,12 +56,12 @@ void MenuItem_obj::Draw(){
 MenuPage_obj::MenuPage_obj(){
 	
 	};
-/*	
-MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listSize){
+
+MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 	this->MenuItem = Items;
-	this->numberOfItems = listSize;
+	this->numberOfItems = listLength;
 };
-*/
+
 
 void MenuPage_obj::Draw(){
 	
@@ -94,28 +100,18 @@ void GUI_obj::TestScreen(){
 //********************* GENERATE MENU  ****************************
 
 
-//MenuItem_obj myItem("hello");
-//MenuPage_obj myPage(&myItem, 1);
-
-MenuItem_obj item1("1");
-MenuItem_obj item2("2");
-MenuItem_obj item3("3");
-
-MenuItem_obj item_list[] = {item1, item2, item3};
-MenuPage_obj menu_page(item_list, 3);
-
-
-
-/*
-MenuItem_obj Items_MainMenu[] = {
-	MenuItem_obj("Mode:"),
-	MenuItem_obj("RUN"),
-	MenuItem_obj("RETURN"),
-	MenuItem_obj("Program"),
-	MenuItem_obj("Settings"),
-	MenuItem_obj("About")
-};
-*/
+	MenuItem_obj Items_MainMenu[] = {
+		MenuItem_obj("Mode:"),
+		MenuItem_obj("RUN"),
+		MenuItem_obj("RETURN"),
+		MenuItem_obj("Program"),
+		MenuItem_obj("Settings"),
+		MenuItem_obj("About")
+	};
+	
+	MenuPage_obj MenuPages[] = {
+		MenuPage_obj(Items_MainMenu, 6)
+	};
 
 /*
 void setMode(HID_Event event){
