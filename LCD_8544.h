@@ -27,23 +27,31 @@
 #define LCD_Y     48
 #define LCD_CMD   0
 
-enum FontStyle {NONE, UNDERLINE, STRIKETHROUGH, INVERT};
+enum FontStyle {UNDERLINE, STRIKETHROUGH, INVERT, NONE};
 enum CursorAllignment {LEFT, CENTER, RIGHT};
 	
 class LCD_8544
 {
-	public:
+public:
 	LCD_8544();
 	void Begin();
+	
+	void setStyle(FontStyle style);
+	void setScreenInvert(bool mode);
+	
 	void Write(char *characters); //strings
 	void Write(int number);
 	void Write(const uint8_t *symbol);
 	void Clear();
 	void Fill();
+	
 	void gotoXY(uint16_t x, uint16_t y);
 	void gotoAlignX(CursorAllignment position);
-	private:
+	
+private:
+	bool activeStyle[3]; //3 font styles
 	void LcdCharacter(char character);
+	uint8_t applyStyle(uint8_t data);
 	void LcdSend(uint8_t dc, uint8_t data);
 
 

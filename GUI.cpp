@@ -27,11 +27,18 @@ uint8_t CurrentPage = 0;
 		MenuItem_obj("About")
 	};
 	
-	MenuPage_obj MenuPages[] = {
-		MenuPage_obj(Items_MainMenu, 6)
+	MenuItem_obj Items_SettingsMenu[]{
+		MenuItem_obj("Op1"),
+		MenuItem_obj("Op2"),
+		MenuItem_obj("Op3")
 	};
 	
-	GUI_obj GUI(MenuPages, 1);
+	MenuPage_obj MenuPages[] = {
+		MenuPage_obj(Items_MainMenu, 6),
+		MenuPage_obj(Items_SettingsMenu, 3)
+	};
+	
+	GUI_obj GUI(MenuPages, 2);
 
 //********************* MENU ITEMS ****************************
 MenuItem_obj::MenuItem_obj(){
@@ -101,6 +108,10 @@ void GUI_obj::Begin(){
 };
 
 void GUI_obj::DrawScreen(){
+	Display.setStyle(NONE);
+	//Display.setStyle(INVERT);
+	//Display.setStyle(STRIKETHROUGH);
+	Display.setStyle(UNDERLINE);
 	MenuPage[0].Draw();
 	};
 

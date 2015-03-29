@@ -36,7 +36,30 @@ void LCD_8544::Begin(){
 	this->LcdSend(LCD_C, 0x20);
 	this->LcdSend(LCD_C, 0x0C);
 	
+	setStyle(NONE);
 	
+}
+
+void LCD_8544::setStyle(FontStyle style){
+	switch(style){
+		case NONE:
+			activeStyle[UNDERLINE] = false;
+			activeStyle[STRIKETHROUGH] = false;
+			activeStyle[INVERT] = false;
+			break;
+			
+		case UNDERLINE:
+			activeStyle[UNDERLINE] = true;
+			
+		case STRIKETHROUGH:
+			activeStyle[STRIKETHROUGH] = true;
+			
+		case INVERT:
+			activeStyle[INVERT] = true;
+			
+		default:
+			break;
+	}
 }
 
 //writes a string to the screen
@@ -57,12 +80,12 @@ void LCD_8544::Write(int number){
 void LCD_8544::Write(const uint8_t *symbol){
 	uint8_t buf[5];
 	memcpy_P(buf, symbol, 5);
-	this->LcdSend(LCD_D, 0x00);
+	this->LcdSend(LCD_D, applyStyle(0x00));
 	for (uint16_t index = 0; index < 5; index++)
 	{
-		this->LcdSend(LCD_D, buf[index]);
+		this->LcdSend(LCD_D, applyStyle(buf[index]));
 	}
-	this->LcdSend(LCD_D, 0x00);
+	this->LcdSend(LCD_D, applyStyle(0x00));
 }
 
 //erases the entire screen
@@ -109,12 +132,20 @@ void LCD_8544::gotoAlignX(CursorAllignment position){
 void LCD_8544::LcdCharacter(char character){
 	uint8_t buf[5];
 	memcpy_P(buf, ASCII[character - 0x20], 5);
-	this->LcdSend(LCD_D, 0x00);
+	this->LcdSend(LCD_D, applyStyle(0x00));
 	for(int index = 0; index < 5; index++)
 	{
-		LcdSend(LCD_D, buf[index]);
+		LcdSend(LCD_D, applyStyle(buf[index]));
 	}
-	this->LcdSend(LCD_D, 0x00);
+	this->LcdSend(LCD_D, applyStyle(0x00));
+}
+
+uint8_t LCD_8544::applyStyle(uint8_t data){
+	uint8_t temp_data = data;
+	if (activeStyle[UNDERLINE]) temp_data |= 0x40;
+	if (activeStyle[STRIKETHROUGH]) temp_data |= 0x08;
+	if (activeStyle[INVERT]) temp_data = ~temp_data;
+	return temp_data;
 }
 
 void LCD_8544::LcdSend(uint8_t dc, uint8_t data){
