@@ -13,9 +13,25 @@
 #include "LCD_8544.h"
 
 LCD_8544 Display;
-GUI_obj GUI;
 
 uint8_t CurrentPage = 0;
+
+//********************* GENERATE MENU  ****************************
+
+	MenuItem_obj Items_MainMenu[] = {
+		MenuItem_obj("Mode:"),
+		MenuItem_obj("RUN"),
+		MenuItem_obj("RETURN"),
+		MenuItem_obj("Program"),
+		MenuItem_obj("Settings"),
+		MenuItem_obj("About")
+	};
+	
+	MenuPage_obj MenuPages[] = {
+		MenuPage_obj(Items_MainMenu, 6)
+	};
+	
+	GUI_obj GUI(MenuPages, 1);
 
 //********************* MENU ITEMS ****************************
 MenuItem_obj::MenuItem_obj(){
@@ -31,6 +47,7 @@ MenuItem_obj::MenuItem_obj(char *button_label, bool *button_function){
 };
 
 void MenuItem_obj::Draw(){
+	Display.Write(Label);
 	/*
 	//Display.Write(Label);
 	switch(Type){
@@ -53,10 +70,6 @@ void MenuItem_obj::Draw(){
 
 //********************* MENU PAGES ****************************
 
-MenuPage_obj::MenuPage_obj(){
-	
-	};
-
 MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 	this->MenuItem = Items;
 	this->numberOfItems = listLength;
@@ -64,25 +77,32 @@ MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 
 
 void MenuPage_obj::Draw(){
-	
+	uint8_t drawLine = 0;
+	Display.Clear();
+	for(uint8_t item = 0; item < numberOfItems; item++){
+		Display.gotoXY(0, drawLine);
+		MenuItem[item].Draw();
+		drawLine++;
+	}
 };
 
 
 //********************* GUI ****************************
 
-GUI_obj::GUI_obj(){};
+GUI_obj::GUI_obj(MenuPage_obj *Pages, uint8_t listLength){
+	this->MenuPage = Pages;
+	this->numberOfMenus = listLength;
+	};
+	
 	
 void GUI_obj::Begin(){
 	Display.Begin();
 	Display.Clear();
-	TestScreen();
 };
 
 void GUI_obj::DrawScreen(){
-	
-	
-
-};
+	MenuPage[0].Draw();
+	};
 
 void GUI_obj::TestScreen(){
 		Display.Clear();
@@ -97,21 +117,7 @@ void GUI_obj::TestScreen(){
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
 };
 
-//********************* GENERATE MENU  ****************************
 
-
-	MenuItem_obj Items_MainMenu[] = {
-		MenuItem_obj("Mode:"),
-		MenuItem_obj("RUN"),
-		MenuItem_obj("RETURN"),
-		MenuItem_obj("Program"),
-		MenuItem_obj("Settings"),
-		MenuItem_obj("About")
-	};
-	
-	MenuPage_obj MenuPages[] = {
-		MenuPage_obj(Items_MainMenu, 6)
-	};
 
 /*
 void setMode(HID_Event event){

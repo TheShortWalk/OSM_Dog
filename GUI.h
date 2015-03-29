@@ -39,7 +39,7 @@ public:
 	void Draw();
 	
 	uint8_t Type;
-	const char *Label; //location of button label
+	char *Label; //location of button label
 	//void *eventTarget(HID_Input);
 private:
 	
@@ -58,16 +58,16 @@ public:
 	void Draw();
 	
 private:
-	uint8_t numberOfItems; //length of menu items array
-	MenuItem_obj *MenuItem; //location of menu items
+	uint8_t numberOfItems; //number of menu items
+	MenuItem_obj *MenuItem; //menu items array
 	
 	
 };
 
 class GUI_obj {
 public:
-	GUI_obj();
-	GUI_obj(MenuPage_obj *Pages, uint8_t listLength)
+	//GUI_obj();
+	GUI_obj(MenuPage_obj *Pages, uint8_t listLength);
 	void Begin();
 	void CheckHID(); //check human input devices 
 	void DrawScreen();
@@ -82,7 +82,8 @@ public:
 	
 	
 private:
-
+	uint8_t numberOfMenus; //number of menu pages
+	MenuPage_obj *MenuPage; //menu page array
 	
 };
 

@@ -53,7 +53,7 @@ int main(void)
 		//_delay_ms(500);
 		//.gotoXY(0,0);
 		//Display.LcdString("Help Me");
-		GUI.TestScreen();
+		GUI.DrawScreen();
 		_delay_ms(1000);
 		//Moco.RunMove();
 		//while(1);
