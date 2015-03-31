@@ -14,8 +14,6 @@
 #include <util/delay.h>
 #include "spi.h"
 
-
-
 // default constructor
 LCD_8544::LCD_8544()
 {
@@ -50,12 +48,15 @@ void LCD_8544::setStyle(FontStyle style){
 			
 		case UNDERLINE:
 			activeStyle[UNDERLINE] = true;
+			break;
 			
 		case STRIKETHROUGH:
 			activeStyle[STRIKETHROUGH] = true;
+			break;
 			
 		case INVERT:
 			activeStyle[INVERT] = true;
+			break;
 			
 		default:
 			break;
@@ -142,7 +143,7 @@ void LCD_8544::LcdCharacter(char character){
 
 uint8_t LCD_8544::applyStyle(uint8_t data){
 	uint8_t temp_data = data;
-	if (activeStyle[UNDERLINE]) temp_data |= 0x40;
+	if (activeStyle[UNDERLINE]) temp_data |= 0x80;
 	if (activeStyle[STRIKETHROUGH]) temp_data |= 0x08;
 	if (activeStyle[INVERT]) temp_data = ~temp_data;
 	return temp_data;

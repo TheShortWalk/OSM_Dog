@@ -7,7 +7,6 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-//#include <string.h>
 #include "MainController.h"
 #include "LCD_8544.h"
 
@@ -80,11 +79,9 @@ public:
 	uint8_t Current_Mode;
 	uint8_t Current_Page;
 	
-	
-private:
 	uint8_t numberOfMenus; //number of menu pages
 	MenuPage_obj *MenuPage; //menu page array
-	
+private:
 };
 
 extern GUI_obj GUI;

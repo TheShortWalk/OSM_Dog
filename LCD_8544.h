@@ -26,6 +26,7 @@
 #define LCD_X     84
 #define LCD_Y     48
 #define LCD_CMD   0
+#define LCD_ROWS	LCD_Y / 8
 
 enum FontStyle {UNDERLINE, STRIKETHROUGH, INVERT, NONE};
 enum CursorAllignment {LEFT, CENTER, RIGHT};
@@ -41,6 +42,7 @@ public:
 	
 	void Write(char *characters); //strings
 	void Write(int number);
+	void Write(float number);
 	void Write(const uint8_t *symbol);
 	void Clear();
 	void Fill();
@@ -158,6 +160,7 @@ static const PROGMEM uint8_t ASCII[][5] = {
 	,{ 0x78, 0x46, 0x41, 0x46, 0x78 } // 7f DEL
 };
 
-static const PROGMEM uint8_t Symb_Arrow[5] = { 0x08, 0x08, 0x3e, 0x1c, 0x08 };
+static const PROGMEM uint8_t Symb_Arrow[5]	= { 0x08, 0x08, 0x3e, 0x1c, 0x08 };
+static const PROGMEM uint8_t Symb_Return[5]	= { 0x44, 0x46, 0x7f, 0x06, 0x04 };
 
 #endif //__LCD_8544_H__

@@ -14,8 +14,6 @@
 
 LCD_8544 Display;
 
-uint8_t CurrentPage = 0;
-
 //********************* GENERATE MENU  ****************************
 
 	MenuItem_obj Items_MainMenu[] = {
@@ -27,7 +25,7 @@ uint8_t CurrentPage = 0;
 		MenuItem_obj("About")
 	};
 	
-	MenuItem_obj Items_SettingsMenu[]{
+	MenuItem_obj Items_SettingsMenu[] = {
 		MenuItem_obj("Op1"),
 		MenuItem_obj("Op2"),
 		MenuItem_obj("Op3")
@@ -80,15 +78,21 @@ void MenuItem_obj::Draw(){
 MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 	this->MenuItem = Items;
 	this->numberOfItems = listLength;
+	this->CursorPosition = 0;
 };
 
 
 void MenuPage_obj::Draw(){
-	uint8_t drawLine = 0;
 	Display.Clear();
-	for(uint8_t item = 0; item < numberOfItems; item++){
+	uint8_t drawLine = 0;
+	uint8_t item = DrawPosition;
+	while ((item < numberOfItems) && (drawLine < 6))
+	{
 		Display.gotoXY(0, drawLine);
+		if (drawLine == CursorPosition) Display.setStyle(INVERT);
 		MenuItem[item].Draw();
+		Display.setStyle(NONE);
+		item++;
 		drawLine++;
 	}
 };
@@ -108,12 +112,9 @@ void GUI_obj::Begin(){
 };
 
 void GUI_obj::DrawScreen(){
-	Display.setStyle(NONE);
-	//Display.setStyle(INVERT);
-	//Display.setStyle(STRIKETHROUGH);
-	Display.setStyle(UNDERLINE);
-	MenuPage[0].Draw();
-	};
+	Current_Page = 0;
+	MenuPage[Current_Page].Draw();
+};
 
 void GUI_obj::TestScreen(){
 		Display.Clear();
@@ -121,7 +122,7 @@ void GUI_obj::TestScreen(){
 		Display.gotoXY(0,1), Display.Write("RUN");
 		Display.gotoXY(0, 2), Display.Write("RETURN");
 		Display.gotoXY(0, 3), Display.Write("Program");
-		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
+		Display.gotoAlignX(RIGHT), Display.Write(Symb_Return);
 		Display.gotoXY(0, 4), Display.Write("Settings");
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
 		Display.gotoXY(0, 5), Display.Write("About");
