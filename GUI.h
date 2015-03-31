@@ -5,6 +5,9 @@
  *  Author: Pooter
  */ 
 
+#ifndef __GUI_H__
+#define __GUI_H__
+
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include "MainController.h"
@@ -95,3 +98,5 @@ Program		//menu page
 Settings	//menu page
 About		//menu page
 */
+
+#endif //__GUI_H__
