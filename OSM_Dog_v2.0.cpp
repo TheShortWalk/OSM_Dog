@@ -49,11 +49,11 @@ int main(void)
 		
     while(1)
     {
-		for(uint8_t i = 0; i < 6; i++){
-			GUI.MenuPage[GUI.Current_Page].CursorPosition = i;
-			GUI.DrawScreen();
-			_delay_ms(1000);
-		}
+		//for(uint8_t i = 0; i < 6; i++){
+			//GUI.MenuPage[GUI.Current_Page].CursorPosition = i;
+			GUI.Update();
+			//_delay_ms(500);
+		//}
 		//GUI.DrawScreen();
 		//_delay_ms(500);
 		//Moco.RunMove();

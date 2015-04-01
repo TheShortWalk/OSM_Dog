@@ -71,6 +71,7 @@ public:
 	//GUI_obj();
 	GUI_obj(MenuPage_obj *Pages, uint8_t listLength);
 	void Begin();
+	void Update();
 	void CheckHID(); //check human input devices 
 	void DrawScreen();
 	

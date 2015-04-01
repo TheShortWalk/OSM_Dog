@@ -11,6 +11,7 @@
 #include <util/delay.h>
 #include "GUI.h"
 #include "LCD_8544.h"
+#include "Encoder.h"
 
 LCD_8544 Display;
 
@@ -83,7 +84,7 @@ MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 
 
 void MenuPage_obj::Draw(){
-	Display.Clear();
+	//Display.Clear();
 	uint8_t drawLine = 0;
 	uint8_t item = DrawPosition;
 	while ((item < numberOfItems) && (drawLine < 6))
@@ -109,6 +110,20 @@ GUI_obj::GUI_obj(MenuPage_obj *Pages, uint8_t listLength){
 void GUI_obj::Begin(){
 	Display.Begin();
 	Display.Clear();
+	HID_Dial.Begin();
+};
+
+void GUI_obj::Update(){
+	//int tempDial = HID_Dial.count;
+	//if(HID_Dial.count != 0){
+		//MenuPage[Current_Page].CursorPosition += tempDial;
+		//HID_Dial.count = 0;
+		Display.Clear();
+		Display.gotoXY(0,0);
+		Display.Write(blah);
+		_delay_ms(100);
+		//GUI.DrawScreen();
+	//}
 };
 
 void GUI_obj::DrawScreen(){

@@ -8,19 +8,28 @@
 
 #ifndef __ENCODER_H__
 #define __ENCODER_H__
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
+//#define PIN_A (1 << INT0)
+
+extern int blah;
 
 class Encoder
 {
 public:
 	Encoder();
 	void Begin();
-	volatile int16_t count;
+	volatile int count;
 
+	uint8_t PORT_bit;
+
+	inline void ISR_Handler();
 private:
-	void ISR_Handler();
 };
 
-Encoder 
+extern Encoder HID_Dial;
+
+//Encoder 
 
 #endif //__ENCODER_H__
