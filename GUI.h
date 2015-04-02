@@ -37,6 +37,7 @@ public:
 	MenuItem_obj();
 	MenuItem_obj(char *button_label);
 	MenuItem_obj(char *button_label, bool *button_function);
+	MenuItem_obj(char *button_label, uint8_t menuPage); //change menu
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
 	
 	void Draw();
@@ -59,7 +60,7 @@ public:
 	int8_t CursorPosition; //user controlled
 	uint8_t DrawPosition; //which MenuItem is drawn first
 	void Draw();
-	void setCursorPosition(int8_t setValue);
+	void setCursorPosition(int8_t scrollValue);
 	
 private:
 
@@ -79,6 +80,8 @@ public:
 	void DrawScreen();
 	
 	void TestScreen();
+	
+	void setMenuPosition(uint8_t setValue);
 	
 	//enum MenuPage {MAIN, TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME, SETTINGS, ABOUT};
 	//enum MocoMode {TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME};

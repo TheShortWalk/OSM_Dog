@@ -26,7 +26,7 @@
 #define LCD_X     84
 #define LCD_Y     48
 #define LCD_CMD   0
-#define LCD_ROWS	LCD_Y / 8
+#define LCD_ROWS	6
 
 enum FontStyle {UNDERLINE, STRIKETHROUGH, INVERT, NONE};
 enum CursorAllignment {LEFT, CENTER, RIGHT};

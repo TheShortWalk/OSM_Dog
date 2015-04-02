@@ -6,6 +6,7 @@
  */ 
 
 #define F_CPU 16000000
+//#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -23,7 +24,13 @@ LCD_8544 Display;
 		MenuItem_obj("RETURN"),
 		MenuItem_obj("Program"),
 		MenuItem_obj("Settings"),
-		MenuItem_obj("About")
+		MenuItem_obj("About"),
+		MenuItem_obj("Extra1"),
+		MenuItem_obj("Extra2"),
+		MenuItem_obj("Extra3"),
+		MenuItem_obj("Extra4"),
+		MenuItem_obj("Extra5"),
+		MenuItem_obj("Extra6")
 	};
 	
 	MenuItem_obj Items_SettingsMenu[] = {
@@ -33,8 +40,8 @@ LCD_8544 Display;
 	};
 	
 	MenuPage_obj MenuPages[] = {
-		MenuPage_obj(Items_MainMenu, 6),
-		MenuPage_obj(Items_SettingsMenu, 3)
+		MenuPage_obj(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0])),
+		MenuPage_obj(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0]))
 	};
 	
 	GUI_obj GUI(MenuPages, 2);
@@ -84,24 +91,29 @@ MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 
 
 void MenuPage_obj::Draw(){
-	//Display.Clear();
+	Display.Clear();
 	uint8_t drawLine = 0;
-	uint8_t item = DrawPosition;
-	while ((item < numberOfItems) && (drawLine < 6))
+	while (((DrawPosition + drawLine) < numberOfItems) && (drawLine < LCD_ROWS))
 	{
 		Display.gotoXY(0, drawLine);
-		if (drawLine == CursorPosition) Display.setStyle(INVERT);
-		MenuItem[item].Draw();
+		if (drawLine == (CursorPosition - DrawPosition)) Display.setStyle(INVERT);
+		MenuItem[DrawPosition + drawLine].Draw();
 		Display.setStyle(NONE);
-		item++;
 		drawLine++;
 	}
+	//help debug LCD menu scrolling
+	//Display.gotoXY(48,0), Display.Write(CursorPosition);
+	//Display.gotoXY(48,1), Display.Write(DrawPosition);
 };
 
-void MenuPage_obj::setCursorPosition(int8_t setValue){
-	CursorPosition += setValue;
+void MenuPage_obj::setCursorPosition(int8_t scrollValue){
+	CursorPosition += scrollValue;
 	if(CursorPosition < 0) CursorPosition = 0;
 	else if(CursorPosition >= numberOfItems) CursorPosition = numberOfItems - 1;
+	
+	int8_t cursorOffset = CursorPosition - DrawPosition;
+	if(cursorOffset >= LCD_ROWS) DrawPosition = CursorPosition - (LCD_ROWS - 1);
+	else if(cursorOffset < 0) DrawPosition = CursorPosition;
 };
 
 
@@ -126,10 +138,6 @@ void GUI_obj::Update(){
 	if(HID_Dial.count != 0){
 		MenuPage[Current_Page].setCursorPosition(HID_Dial.count);
 		HID_Dial.count = 0;
-		Display.Clear();
-		//Display.gotoXY(0,0);
-		//Display.Write(MenuPage[Current_Page].CursorPosition);
-		//_delay_ms(100);
 		GUI.DrawScreen();
 	}
 };
@@ -150,6 +158,11 @@ void GUI_obj::TestScreen(){
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
 		Display.gotoXY(0, 5), Display.Write("About");
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
+};
+
+void GUI_obj::setMenuPosition(uint8_t setValue){
+	//check to make sure the menu exists
+	if(setValue < numberOfMenus) Current_Page = setValue;
 };
 
 
