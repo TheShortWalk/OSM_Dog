@@ -11,7 +11,7 @@
 #include <util/delay.h>
 #include "GUI.h"
 
-MainController_obj Moco;
+//MainController_obj Moco;
 
 int main(void)
 {

@@ -10,7 +10,8 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
-#include "MainController.h"
+#include <stdint.h>
+//#include "MainController.h"
 #include "LCD_8544.h"
 
 #define SCREENSIZE_X 14 //characters per row
@@ -55,11 +56,13 @@ public:
 	MenuPage_obj();
 	MenuPage_obj(MenuItem_obj *Items, uint8_t listLength);
 	
-	uint8_t CursorPosition; //user controlled
+	int8_t CursorPosition; //user controlled
 	uint8_t DrawPosition; //which MenuItem is drawn first
 	void Draw();
+	void setCursorPosition(int8_t setValue);
 	
 private:
+
 	uint8_t numberOfItems; //number of menu items
 	MenuItem_obj *MenuItem; //menu items array
 	
@@ -68,7 +71,7 @@ private:
 
 class GUI_obj {
 public:
-	//GUI_obj();
+	GUI_obj();
 	GUI_obj(MenuPage_obj *Pages, uint8_t listLength);
 	void Begin();
 	void Update();

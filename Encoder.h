@@ -13,7 +13,7 @@
 
 //#define PIN_A (1 << INT0)
 
-extern int blah;
+void Encoder_Begin();
 
 class Encoder
 {

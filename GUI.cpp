@@ -98,8 +98,16 @@ void MenuPage_obj::Draw(){
 	}
 };
 
+void MenuPage_obj::setCursorPosition(int8_t setValue){
+	CursorPosition += setValue;
+	if(CursorPosition < 0) CursorPosition = 0;
+	else if(CursorPosition >= numberOfItems) CursorPosition = numberOfItems - 1;
+};
+
 
 //********************* GUI ****************************
+
+GUI_obj::GUI_obj(){};
 
 GUI_obj::GUI_obj(MenuPage_obj *Pages, uint8_t listLength){
 	this->MenuPage = Pages;
@@ -110,20 +118,20 @@ GUI_obj::GUI_obj(MenuPage_obj *Pages, uint8_t listLength){
 void GUI_obj::Begin(){
 	Display.Begin();
 	Display.Clear();
-	HID_Dial.Begin();
+	Encoder_Begin();
 };
 
 void GUI_obj::Update(){
-	//int tempDial = HID_Dial.count;
-	//if(HID_Dial.count != 0){
-		//MenuPage[Current_Page].CursorPosition += tempDial;
-		//HID_Dial.count = 0;
+	int tempDial = HID_Dial.count;
+	if(HID_Dial.count != 0){
+		MenuPage[Current_Page].setCursorPosition(HID_Dial.count);
+		HID_Dial.count = 0;
 		Display.Clear();
-		Display.gotoXY(0,0);
-		Display.Write(blah);
-		_delay_ms(100);
-		//GUI.DrawScreen();
-	//}
+		//Display.gotoXY(0,0);
+		//Display.Write(MenuPage[Current_Page].CursorPosition);
+		//_delay_ms(100);
+		GUI.DrawScreen();
+	}
 };
 
 void GUI_obj::DrawScreen(){
