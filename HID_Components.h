@@ -12,6 +12,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+//Encoder Pins
 #define PIN_AB_PINn		PIND
 #define PIN_AB_DDRn		DDRD
 #define PIN_AB_PORTn	PORTD
@@ -19,11 +20,13 @@
 #define PIN_B_PORTnx	PORTD4
 #define PIN_B_PINnx		PIND4
 
+//Button Pin
 #define PIN_BTN_PINn	PIND
 #define PIN_BTN_DDRn	DDRD
 #define PIN_BTN_PORTn	PORTD
 #define PIN_BTN_PORTnx	PORTD1
 
+//ISRx trigger modes
 enum INTx_Modes {LOW=0, CHANGE=1, FALLING=2, RISING=3};
 #define MODE_0			RISING
 #define MODE_1			CHANGE
@@ -54,6 +57,7 @@ private:
 
 extern Encoder HID_Dial;
 extern Button HID_Button;
+extern bool HID_Change; //indicates a change in HID values
 
 //Encoder 
 

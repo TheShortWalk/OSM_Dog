@@ -16,7 +16,7 @@
 
 LCD_8544 Display;
 
-//********************* GENERATE MENU  ****************************
+//______________________ GENERATE MENU  ______________________________
 
 	MenuItem_obj Items_MainMenu[] = {
 		MenuItem_obj("Mode:"),
@@ -46,10 +46,8 @@ LCD_8544 Display;
 	
 	GUI_obj GUI(MenuPages, 2);
 
-//********************* MENU ITEMS ****************************
-MenuItem_obj::MenuItem_obj(){
-	
-};
+//______________________ MENU ITEMS __________________________________
+MenuItem_obj::MenuItem_obj(){};
 
 MenuItem_obj::MenuItem_obj(char *button_label){
 	this->Label = button_label;
@@ -81,7 +79,7 @@ void MenuItem_obj::Draw(){
 	*/
 };
 
-//********************* MENU PAGES ****************************
+//___________________________ MENU PAGES _______________________________
 
 MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 	this->MenuItem = Items;
@@ -122,7 +120,7 @@ void MenuPage_obj::setCursorPosition(int8_t scrollValue){
 };
 
 
-//********************* GUI ****************************
+//______________________________ GUI _____________________________
 
 GUI_obj::GUI_obj(){};
 
@@ -141,8 +139,8 @@ void GUI_obj::Begin(){
 };
 
 void GUI_obj::Update(){
-	int tempDial = HID_Dial.count;
-	if(HID_Dial.count != 0){
+	if(HID_Change){
+		HID_Change = false;
 		MenuPage[Current_Page].setCursorPosition(HID_Dial.count);
 		HID_Dial.count = 0;
 		GUI.DrawScreen();
@@ -167,9 +165,35 @@ void GUI_obj::TestScreen(){
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
 };
 
-void GUI_obj::setMenuPosition(uint8_t setValue){
+void GUI_obj::setMenuPosition(int8_t setValue){
 	//check to make sure the menu exists
 	if(setValue < numberOfMenus) Current_Page = setValue;
+};
+
+void GUI_obj::Handle_ButtonPress(Button::ButtonStates state){
+	MenuPage_obj *page = &MenuPage[Current_Page];
+	MenuItem_obj *item = &page->MenuItem[page->CursorPosition]
+	switch(item->type){
+		case MenuItem_obj::FUNCTION:
+			//run functions
+			break;
+		case MenuItem_obj::FIELD:
+			//change scroll target
+			break;
+		case MenuItem_obj::MENUCHANGE:
+			
+			break;
+		default:
+			break;
+	}
+	//switch
+	//case FUNCTION
+	//case FIELD
+	//case MENUCHANGE
+};
+
+void GUI_obj::Handle_Scroll(int8_t scrollChange){
+	
 };
 
 

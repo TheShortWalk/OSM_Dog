@@ -13,12 +13,12 @@
 #include <stdint.h>
 //#include "MainController.h"
 #include "LCD_8544.h"
+#include "HID_Components.h"
 
 #define SCREENSIZE_X 14 //characters per row
 #define SCREENSIZE_Y 6 //rows on screen
 
-enum MenuItem {BUTTON, LIST, INCREMENT};
-enum HID_Event {BUTTON_PRESS, BUTTON_RELEASE, SCROLL_UP, SCROLL_DOWN};
+//enum HID_Event {BUTTON_PRESS, BUTTON_RELEASE, SCROLL_UP, SCROLL_DOWN};
 
 //MainController_obj Moco;
 //LCD_8544 Display;
@@ -34,6 +34,8 @@ struct HID_Event{
 
 class MenuItem_obj{
 public:
+	enum ItemType {FUNCTION, FIELD, MENUCHANGE};
+		
 	MenuItem_obj();
 	MenuItem_obj(char *button_label);
 	MenuItem_obj(char *button_label, bool *button_function);
@@ -42,9 +44,10 @@ public:
 	
 	void Draw();
 	
-	uint8_t Type;
+	ItemType type;
 	char *Label; //location of button label
-	//void *eventTarget(HID_Input);
+	void *buttonFunction(void);
+	void *
 private:
 	
 };
@@ -81,7 +84,7 @@ public:
 	
 	void TestScreen();
 	
-	void setMenuPosition(uint8_t setValue);
+	void setMenuPosition(int8_t setValue);
 	
 	//enum MenuPage {MAIN, TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME, SETTINGS, ABOUT};
 	//enum MocoMode {TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME};
@@ -92,6 +95,8 @@ public:
 	uint8_t numberOfMenus; //number of menu pages
 	MenuPage_obj *MenuPage; //menu page array
 private:
+	void Handle_ButtonPress(Button::ButtonStates state);
+	void Handle_Scroll(int8_t scrollChange);
 };
 
 extern GUI_obj GUI;
