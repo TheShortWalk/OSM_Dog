@@ -12,7 +12,7 @@
 #include <util/delay.h>
 #include "GUI.h"
 #include "LCD_8544.h"
-#include "Encoder.h"
+#include "HID_Components.h"
 
 LCD_8544 Display;
 
@@ -89,13 +89,15 @@ MenuPage_obj::MenuPage_obj(MenuItem_obj *Items, uint8_t listLength){
 	this->CursorPosition = 0;
 };
 
-
+//Draws the menu to the LCD
 void MenuPage_obj::Draw(){
 	Display.Clear();
 	uint8_t drawLine = 0;
+	//Draw menu items until off screen or end of menu
 	while (((DrawPosition + drawLine) < numberOfItems) && (drawLine < LCD_ROWS))
 	{
 		Display.gotoXY(0, drawLine);
+		//set font to inverted when drawing menu item at CursorPosition
 		if (drawLine == (CursorPosition - DrawPosition)) Display.setStyle(INVERT);
 		MenuItem[DrawPosition + drawLine].Draw();
 		Display.setStyle(NONE);
@@ -106,11 +108,14 @@ void MenuPage_obj::Draw(){
 	//Display.gotoXY(48,1), Display.Write(DrawPosition);
 };
 
+//handles scrolling of the menu
 void MenuPage_obj::setCursorPosition(int8_t scrollValue){
+	//Prevent cursor from scrolling off menu
 	CursorPosition += scrollValue;
 	if(CursorPosition < 0) CursorPosition = 0;
 	else if(CursorPosition >= numberOfItems) CursorPosition = numberOfItems - 1;
 	
+	//Shifts the menu if scrolled off screen
 	int8_t cursorOffset = CursorPosition - DrawPosition;
 	if(cursorOffset >= LCD_ROWS) DrawPosition = CursorPosition - (LCD_ROWS - 1);
 	else if(cursorOffset < 0) DrawPosition = CursorPosition;
@@ -130,7 +135,9 @@ GUI_obj::GUI_obj(MenuPage_obj *Pages, uint8_t listLength){
 void GUI_obj::Begin(){
 	Display.Begin();
 	Display.Clear();
-	Encoder_Begin();
+	this->DrawScreen();
+	HID_Dial.Begin();
+	HID_Button.Begin();
 };
 
 void GUI_obj::Update(){
