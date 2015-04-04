@@ -18,6 +18,9 @@
 #define SCREENSIZE_X 14 //characters per row
 #define SCREENSIZE_Y 6 //rows on screen
 
+enum MenuPageList {MAIN, SETTINGS, ABOUT, END_OF_MENU};
+
+
 //enum HID_Event {BUTTON_PRESS, BUTTON_RELEASE, SCROLL_UP, SCROLL_DOWN};
 
 //MainController_obj Moco;
@@ -38,8 +41,8 @@ public:
 		
 	MenuItem_obj();
 	MenuItem_obj(char *button_label);
-	MenuItem_obj(char *button_label, bool *button_function);
-	MenuItem_obj(char *button_label, uint8_t menuPage); //change menu
+	MenuItem_obj(char *button_label, void *function(void)); //run function
+	MenuItem_obj(char *button_label, MenuPageList menuPage); //change menu
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
 	
 	void Draw();
@@ -47,7 +50,7 @@ public:
 	ItemType type;
 	char *Label; //location of button label
 	void *buttonFunction(void);
-	void *
+	MenuPageList menu;
 private:
 	
 };
@@ -65,11 +68,10 @@ public:
 	void Draw();
 	void setCursorPosition(int8_t scrollValue);
 	
-private:
-
 	uint8_t numberOfItems; //number of menu items
 	MenuItem_obj *MenuItem; //menu items array
 	
+private:
 	
 };
 
@@ -84,7 +86,7 @@ public:
 	
 	void TestScreen();
 	
-	void setMenuPosition(int8_t setValue);
+	void setMenuPosition(MenuPageList page);
 	
 	//enum MenuPage {MAIN, TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME, SETTINGS, ABOUT};
 	//enum MocoMode {TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME};
@@ -95,11 +97,13 @@ public:
 	uint8_t numberOfMenus; //number of menu pages
 	MenuPage_obj *MenuPage; //menu page array
 private:
-	void Handle_ButtonPress(Button::ButtonStates state);
+	void Handle_Button(Button::ButtonStates state);
 	void Handle_Scroll(int8_t scrollChange);
 };
 
 extern GUI_obj GUI;
+
+
 
 //Main Menu
 /*

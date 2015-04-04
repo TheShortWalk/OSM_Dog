@@ -14,37 +14,46 @@
 #include "LCD_8544.h"
 #include "HID_Components.h"
 
+
 LCD_8544 Display;
 
 //______________________ GENERATE MENU  ______________________________
 
-	MenuItem_obj Items_MainMenu[] = {
-		MenuItem_obj("Mode:"),
-		MenuItem_obj("RUN"),
-		MenuItem_obj("RETURN"),
-		MenuItem_obj("Program"),
-		MenuItem_obj("Settings"),
-		MenuItem_obj("About"),
-		MenuItem_obj("Extra1"),
-		MenuItem_obj("Extra2"),
-		MenuItem_obj("Extra3"),
-		MenuItem_obj("Extra4"),
-		MenuItem_obj("Extra5"),
-		MenuItem_obj("Extra6")
-	};
+MenuPage_obj *MenuPages[END_OF_MENU];
+
+MenuItem_obj Items_MainMenu[] = {
+	MenuItem_obj("Mode:"),
+	MenuItem_obj("RUN"),
+	MenuItem_obj("RETURN"),
+	MenuItem_obj("Program"),
+	MenuItem_obj("Settings", SETTINGS),
+	MenuItem_obj("About"),
+	MenuItem_obj("Extra1")
+};
+
+MenuItem_obj Items_SettingsMenu[] = {
+	MenuItem_obj("Op1"),
+	MenuItem_obj("Op2"),
+	MenuItem_obj("Op3")
+};
+
+MenuItem_obj Items_AboutMenu[] = {
+	MenuItem_obj("Rev 2.0")
+};
+
+MenuPage_obj Menu_Main(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0]));
+MenuPage_obj Menu_Settings(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0]));
+MenuPage_obj Menu_About(Items_AboutMenu, sizeof(Items_AboutMenu)/sizeof(Items_AboutMenu[0]));
 	
-	MenuItem_obj Items_SettingsMenu[] = {
-		MenuItem_obj("Op1"),
-		MenuItem_obj("Op2"),
-		MenuItem_obj("Op3")
-	};
-	
-	MenuPage_obj MenuPages[] = {
-		MenuPage_obj(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0])),
-		MenuPage_obj(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0]))
-	};
-	
-	GUI_obj GUI(MenuPages, 2);
+/*
+MenuPage_obj MenuPages[] = {
+	MenuPage_obj(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0])),
+	MenuPage_obj(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0])),
+	MenuPage_obj(Items_AboutMenu, sizeof(Items_AboutMenu)/sizeof(Items_AboutMenu[0]))
+};
+*/
+
+GUI_obj GUI(MenuPages, 3);
 
 //______________________ MENU ITEMS __________________________________
 MenuItem_obj::MenuItem_obj(){};
@@ -53,9 +62,14 @@ MenuItem_obj::MenuItem_obj(char *button_label){
 	this->Label = button_label;
 };
 
-MenuItem_obj::MenuItem_obj(char *button_label, bool *button_function){
+MenuItem_obj::MenuItem_obj(char *button_label, void *function(void)){
 	this->Label = button_label;
 };
+
+MenuItem_obj::MenuItem_obj(char *button_label, MenuPageList menuPage){
+	this->Label = button_label;
+	this->menu = menuPage;
+}
 
 void MenuItem_obj::Draw(){
 	Display.Write(Label);
@@ -165,31 +179,40 @@ void GUI_obj::TestScreen(){
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
 };
 
-void GUI_obj::setMenuPosition(int8_t setValue){
+void GUI_obj::setMenuPosition(MenuPageList page){
 	//check to make sure the menu exists
-	if(setValue < numberOfMenus) Current_Page = setValue;
+	if((page < END_OF_MENU) && (page >= 0)) Current_Page = page;
 };
 
-void GUI_obj::Handle_ButtonPress(Button::ButtonStates state){
-	MenuPage_obj *page = &MenuPage[Current_Page];
-	MenuItem_obj *item = &page->MenuItem[page->CursorPosition]
-	switch(item->type){
-		case MenuItem_obj::FUNCTION:
-			//run functions
+void GUI_obj::Handle_Button(Button::ButtonStates state){
+	switch(state){
+		case Button::PRESS:
+			break;	
+		case Button::RELEASE:
+			MenuPage_obj *page = &MenuPage[Current_Page];
+			MenuItem_obj *item = &page->MenuItem[page->CursorPosition];
+			switch(item->type){
+				case MenuItem_obj::FUNCTION:
+					//run functions
+					break;
+				case MenuItem_obj::FIELD:
+					//change scroll target
+					break;
+				case MenuItem_obj::MENUCHANGE:
+					setMenuPosition(item->menu);
+					break;
+				default:
+					break;
+			};
 			break;
-		case MenuItem_obj::FIELD:
-			//change scroll target
-			break;
-		case MenuItem_obj::MENUCHANGE:
+			//switch
+			//case FUNCTION
+			//case FIELD
+			//case MENUCHANGE
 			
-			break;
-		default:
-			break;
-	}
-	//switch
-	//case FUNCTION
-	//case FIELD
-	//case MENUCHANGE
+		//default:
+			//break;
+	};
 };
 
 void GUI_obj::Handle_Scroll(int8_t scrollChange){
