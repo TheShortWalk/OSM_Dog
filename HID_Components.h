@@ -37,6 +37,8 @@ public:
 	Encoder();
 	void Begin();
 	volatile int8_t count;
+	
+	bool Changed;
 
 	inline void ISR_Handler();
 private:
@@ -48,6 +50,8 @@ public:
 	Button();
 	void Begin();
 	
+	bool Changed;
+	
 	enum ButtonStates {PRESS, RELEASE};
 	volatile ButtonStates state;
 	
@@ -57,7 +61,7 @@ private:
 
 extern Encoder HID_Dial;
 extern Button HID_Button;
-extern bool HID_Change; //indicates a change in HID values
+extern bool HID_Changed; //indicates a change in HID values
 
 //Encoder 
 

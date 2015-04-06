@@ -12,7 +12,7 @@
 
 Encoder HID_Dial;
 Button	HID_Button;
-bool HID_Change;
+bool HID_Changed;
 
 //________________________Encoder________________________
 Encoder::Encoder()
@@ -37,7 +37,8 @@ inline void Encoder::ISR_Handler(){
 	if(PIN_AB_PINn & (1<<PIN_B_PINnx)) HID_Dial.count++;
 	else HID_Dial.count--;
 	PORTC ^= (1<<PORTC7); //toggle pin 13 LED
-	HID_Change = true;
+	HID_Changed = true;
+	HID_Dial.Changed = true;
 }
 
 //________________________Button________________________
@@ -57,10 +58,11 @@ void Button::Begin(){
 }
 
 inline void Button::ISR_Handler(){
-	if(PIN_BTN_PINn & (1<<PIN_B_PORTnx)) HID_Button.state = PRESS;
+	if(PIN_BTN_PINn & (1<<PIN_BTN_PORTnx)) HID_Button.state = PRESS;
 	else HID_Button.state = RELEASE;
 	PORTC ^= (1<<PORTC7); //toggle pin 13 LED
-	HID_Change = true;
+	HID_Changed = true;
+	HID_Button.Changed = true;
 }
 
 //________________________ISR's________________________

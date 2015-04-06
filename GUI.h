@@ -18,8 +18,7 @@
 #define SCREENSIZE_X 14 //characters per row
 #define SCREENSIZE_Y 6 //rows on screen
 
-enum MenuPageList {MAIN, SETTINGS, ABOUT, END_OF_MENU};
-
+enum MenuPageList {MAIN, PROGRAM, SETTINGS, ABOUT, END_OF_MENU};
 
 //enum HID_Event {BUTTON_PRESS, BUTTON_RELEASE, SCROLL_UP, SCROLL_DOWN};
 
@@ -34,6 +33,7 @@ struct HID_Event{
 };*/
 
 //One item in the menu
+void linkMenus();
 
 class MenuItem_obj{
 public:
@@ -43,14 +43,20 @@ public:
 	MenuItem_obj(char *button_label);
 	MenuItem_obj(char *button_label, void *function(void)); //run function
 	MenuItem_obj(char *button_label, MenuPageList menuPage); //change menu
+	//MenuItem_obj(char *button_label, int16_t *setValue(HID_Dial)); //
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
 	
 	void Draw();
 	
+	void itemSelect();
+	void itemDeselect();
+	
+	bool selected;
+	
 	ItemType type;
 	char *Label; //location of button label
 	void *buttonFunction(void);
-	MenuPageList menu;
+	MenuPageList menuLink;
 private:
 	
 };

@@ -5,6 +5,8 @@
  *  Author: Pooter
  */ 
 
+#define length(name) sizeof(name)/sizeof((name)[0])
+
 #define F_CPU 16000000
 //#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
@@ -19,41 +21,44 @@ LCD_8544 Display;
 
 //______________________ GENERATE MENU  ______________________________
 
-MenuPage_obj *MenuPages[END_OF_MENU];
-
 MenuItem_obj Items_MainMenu[] = {
 	MenuItem_obj("Mode:"),
 	MenuItem_obj("RUN"),
 	MenuItem_obj("RETURN"),
-	MenuItem_obj("Program"),
+	MenuItem_obj("Program", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
-	MenuItem_obj("About"),
-	MenuItem_obj("Extra1")
+	MenuItem_obj("About", ABOUT),
+	MenuItem_obj("Extra1"),
+	MenuItem_obj("Haii")
+};
+
+MenuItem_obj Items_ProgramMenu[] = {
+	MenuItem_obj("Back", MAIN)
 };
 
 MenuItem_obj Items_SettingsMenu[] = {
-	MenuItem_obj("Op1"),
-	MenuItem_obj("Op2"),
-	MenuItem_obj("Op3")
+	MenuItem_obj("Back", MAIN)
 };
 
 MenuItem_obj Items_AboutMenu[] = {
-	MenuItem_obj("Rev 2.0")
+	MenuItem_obj("Rev 2.0"),
+	MenuItem_obj("Back", MAIN)
 };
 
-MenuPage_obj Menu_Main(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0]));
-MenuPage_obj Menu_Settings(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0]));
-MenuPage_obj Menu_About(Items_AboutMenu, sizeof(Items_AboutMenu)/sizeof(Items_AboutMenu[0]));
-	
-/*
+//MenuPage_obj *MenuPages[END_OF_MENU];
+
+//MenuPage_obj Menu_Main(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0]));
+//MenuPage_obj Menu_Settings(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0]));
+//MenuPage_obj Menu_About(Items_AboutMenu, sizeof(Items_AboutMenu)/sizeof(Items_AboutMenu[0]));
+
 MenuPage_obj MenuPages[] = {
-	MenuPage_obj(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0])),
-	MenuPage_obj(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0])),
-	MenuPage_obj(Items_AboutMenu, sizeof(Items_AboutMenu)/sizeof(Items_AboutMenu[0]))
+	MenuPage_obj(Items_MainMenu, length(Items_MainMenu)),
+	MenuPage_obj(Items_ProgramMenu, length(Items_ProgramMenu)),
+	MenuPage_obj(Items_SettingsMenu, length(Items_SettingsMenu)),
+	MenuPage_obj(Items_AboutMenu, length(Items_AboutMenu))
 };
-*/
 
-GUI_obj GUI(MenuPages, 3);
+GUI_obj GUI(MenuPages, length(MenuPages));
 
 //______________________ MENU ITEMS __________________________________
 MenuItem_obj::MenuItem_obj(){};
@@ -62,13 +67,17 @@ MenuItem_obj::MenuItem_obj(char *button_label){
 	this->Label = button_label;
 };
 
+//Function
 MenuItem_obj::MenuItem_obj(char *button_label, void *function(void)){
 	this->Label = button_label;
+	this->type = FUNCTION;
 };
 
+//MenuChange
 MenuItem_obj::MenuItem_obj(char *button_label, MenuPageList menuPage){
 	this->Label = button_label;
-	this->menu = menuPage;
+	this->menuLink = menuPage;
+	this->type = MENUCHANGE;
 }
 
 void MenuItem_obj::Draw(){
@@ -91,6 +100,24 @@ void MenuItem_obj::Draw(){
 	}
 	//Display.Write();
 	*/
+};
+
+void MenuItem_obj::itemSelect(){
+	switch(type){
+		case FUNCTION:
+			break;
+		case FIELD:
+			break;
+		case MENUCHANGE:
+			GUI.setMenuPosition(menuLink); 
+			break;
+		default:
+			break;
+	}
+};
+
+void MenuItem_obj::itemDeselect(){
+	
 };
 
 //___________________________ MENU PAGES _______________________________
@@ -141,6 +168,8 @@ GUI_obj::GUI_obj(){};
 GUI_obj::GUI_obj(MenuPage_obj *Pages, uint8_t listLength){
 	this->MenuPage = Pages;
 	this->numberOfMenus = listLength;
+	
+	this->Current_Page = MAIN;
 	};
 	
 	
@@ -153,17 +182,18 @@ void GUI_obj::Begin(){
 };
 
 void GUI_obj::Update(){
-	if(HID_Change){
-		HID_Change = false;
-		MenuPage[Current_Page].setCursorPosition(HID_Dial.count);
-		HID_Dial.count = 0;
+	if(HID_Changed){
+		HID_Changed = false;
+		if(HID_Button.Changed) Handle_Button(HID_Button.state);
+		if(HID_Dial.Changed) Handle_Scroll(HID_Dial.count);
 		GUI.DrawScreen();
 	}
 };
 
 void GUI_obj::DrawScreen(){
-	Current_Page = 0;
 	MenuPage[Current_Page].Draw();
+	Display.gotoXY(50,0);
+	Display.Write(Current_Page);
 };
 
 void GUI_obj::TestScreen(){
@@ -185,65 +215,29 @@ void GUI_obj::setMenuPosition(MenuPageList page){
 };
 
 void GUI_obj::Handle_Button(Button::ButtonStates state){
+	HID_Button.Changed = false;
+	
+	MenuPage_obj *page = &MenuPage[Current_Page];
+	MenuItem_obj *item = &page->MenuItem[page->CursorPosition];
+	
 	switch(state){
 		case Button::PRESS:
+			//item->itemSelect();
 			break;	
-		case Button::RELEASE:
-			MenuPage_obj *page = &MenuPage[Current_Page];
-			MenuItem_obj *item = &page->MenuItem[page->CursorPosition];
-			switch(item->type){
-				case MenuItem_obj::FUNCTION:
-					//run functions
-					break;
-				case MenuItem_obj::FIELD:
-					//change scroll target
-					break;
-				case MenuItem_obj::MENUCHANGE:
-					setMenuPosition(item->menu);
-					break;
-				default:
-					break;
-			};
-			break;
-			//switch
-			//case FUNCTION
-			//case FIELD
-			//case MENUCHANGE
 			
-		//default:
-			//break;
+		case Button::RELEASE:
+			item->itemSelect();
+			break;
+			
+		default:
+			break;
 	};
 };
 
 void GUI_obj::Handle_Scroll(int8_t scrollChange){
+	HID_Dial.Changed = false;
 	
+	MenuPage[Current_Page].setCursorPosition(HID_Dial.count);
+	HID_Dial.count = 0;
 };
 
-
-
-/*
-void setMode(HID_Event event){
-	switch(event){
-		case BUTTON_PRESS: //exit menu select
-			break;
-		case SCROLL_UP: //switch mode
-			
-			break;
-		case SCROLL_DOWN: //switch mode
-			break;
-		default:
-			break;
-	}
-}
-
-void setRun(HID_Event event){
-	switch(event){
-		case BUTTON_PRESS:
-			//run moco program
-			break;
-		default:
-			break;
-	}
-}
-*/
-//void setInt
