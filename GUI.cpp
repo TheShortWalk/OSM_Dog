@@ -19,6 +19,18 @@
 
 LCD_8544 Display;
 
+void set_testValue(int8_t scrollValue){
+	testValue += scrollValue;
+	if(testValue < 0) testValue = 0;
+	else if(testValue > 50) testValue = 50;
+};
+
+uint16_t get_testValue(){
+	return testValue;
+};
+
+
+
 //______________________ GENERATE MENU  ______________________________
 
 MenuItem_obj Items_MainMenu[] = {
@@ -28,7 +40,7 @@ MenuItem_obj Items_MainMenu[] = {
 	MenuItem_obj("Program", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
 	MenuItem_obj("About", ABOUT),
-	MenuItem_obj("Extra1"),
+	MenuItem_obj("Extra1", &set_testValue, &get_testValue),
 	MenuItem_obj("Haii")
 };
 
@@ -78,6 +90,10 @@ MenuItem_obj::MenuItem_obj(char *button_label, MenuPageList menuPage){
 	this->Label = button_label;
 	this->menuLink = menuPage;
 	this->type = MENUCHANGE;
+}
+
+MenuItem_obj::MenuItem_obj(char *button_label, void *setValue(int8_t), uint16_t *getValue){
+	this->
 }
 
 void MenuItem_obj::Draw(){
@@ -192,8 +208,8 @@ void GUI_obj::Update(){
 
 void GUI_obj::DrawScreen(){
 	MenuPage[Current_Page].Draw();
-	Display.gotoXY(50,0);
-	Display.Write(Current_Page);
+	//Display.gotoXY(50,0);
+	//Display.Write(Current_Page);
 };
 
 void GUI_obj::TestScreen(){

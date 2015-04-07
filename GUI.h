@@ -35,6 +35,12 @@ struct HID_Event{
 //One item in the menu
 void linkMenus();
 
+extern uint16_t testValue;
+void set_testValue(int8_t scrollValue);
+
+uint16_t get_testValue();
+
+
 class MenuItem_obj{
 public:
 	enum ItemType {FUNCTION, FIELD, MENUCHANGE};
@@ -43,7 +49,7 @@ public:
 	MenuItem_obj(char *button_label);
 	MenuItem_obj(char *button_label, void *function(void)); //run function
 	MenuItem_obj(char *button_label, MenuPageList menuPage); //change menu
-	//MenuItem_obj(char *button_label, int16_t *setValue(HID_Dial)); //
+	MenuItem_obj(char *button_label, void (*setValue)(int8_t), uint16_t (*getValue)(void)); //
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
 	
 	void Draw();
