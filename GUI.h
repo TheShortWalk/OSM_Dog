@@ -35,35 +35,47 @@ struct HID_Event{
 //One item in the menu
 void linkMenus();
 
-extern uint16_t testValue;
-void set_testValue(int8_t scrollValue);
+//extern uint16_t testValue;
+void set_testValue();
 
-uint16_t get_testValue();
+int16_t get_testValue();
+
+char *to_char(int16_t value);
+char *to_char(float value);
 
 
 class MenuItem_obj{
 public:
-	enum ItemType {FUNCTION, FIELD, MENUCHANGE};
+	enum ItemType {TEXT, FUNCTION, FIELD, MENUCHANGE};
 		
 	MenuItem_obj();
+	//Label
 	MenuItem_obj(char *button_label);
-	MenuItem_obj(char *button_label, void *function(void)); //run function
-	MenuItem_obj(char *button_label, MenuPageList menuPage); //change menu
-	MenuItem_obj(char *button_label, void (*setValue)(int8_t), uint16_t (*getValue)(void)); //
+	//Function
+	MenuItem_obj(char *button_label, void (*function)()); 
+	//Menu change
+	MenuItem_obj(char *button_label, MenuPageList menuPage);
+	//Data display and modify
+	MenuItem_obj(char *button_label, char (*get)());
+	//MenuItem_obj(char *button_label, float (*get)(),	void (*set)(int8_t));
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
 	
 	void Draw();
 	
 	void itemSelect();
 	void itemDeselect();
-	
+		
 	bool selected;
 	
 	ItemType type;
 	char *Label; //location of button label
-	void *buttonFunction(void);
+	void (*buttonFunction)();
+	char (*getData)();
 	MenuPageList menuLink;
 private:
+
+	//char *to_char(int16_t value);
+	//char *to_char(float value);
 	
 };
 

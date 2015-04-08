@@ -28,8 +28,8 @@
 
 //ISRx trigger modes
 enum INTx_Modes {LOW=0, CHANGE=1, FALLING=2, RISING=3};
-#define MODE_0			RISING
-#define MODE_1			CHANGE
+#define MODE_0			RISING	//rising for encoder
+#define MODE_1			CHANGE	//changing for button
 
 class Encoder
 {

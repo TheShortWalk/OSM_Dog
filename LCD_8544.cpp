@@ -72,7 +72,7 @@ void LCD_8544::Write(char *characters){
 
 //writes a signed int to the screen, including negative sign
 void LCD_8544::Write(int number){
-	char str[6];
+	char str[7];
 	itoa(number, str, 10);
 	this->Write(str);
 }

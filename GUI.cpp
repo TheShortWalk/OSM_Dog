@@ -12,6 +12,7 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <stdlib.h>
 #include "GUI.h"
 #include "LCD_8544.h"
 #include "HID_Components.h"
@@ -19,13 +20,15 @@
 
 LCD_8544 Display;
 
-void set_testValue(int8_t scrollValue){
-	testValue += scrollValue;
-	if(testValue < 0) testValue = 0;
-	else if(testValue > 50) testValue = 50;
+int16_t testValue = 0;
+
+void set_testValue(){
+	testValue++;
+	//if(testValue < 0) testValue = 0;
+	//else if(testValue > 50) testValue = 50;
 };
 
-uint16_t get_testValue(){
+int16_t get_testValue(){
 	return testValue;
 };
 
@@ -40,8 +43,8 @@ MenuItem_obj Items_MainMenu[] = {
 	MenuItem_obj("Program", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
 	MenuItem_obj("About", ABOUT),
-	MenuItem_obj("Extra1", &set_testValue, &get_testValue),
-	MenuItem_obj("Haii")
+	MenuItem_obj("Extra1", set_testValue),
+	MenuItem_obj("Haii", to_char(get_testValue()))
 };
 
 MenuItem_obj Items_ProgramMenu[] = {
@@ -57,12 +60,6 @@ MenuItem_obj Items_AboutMenu[] = {
 	MenuItem_obj("Back", MAIN)
 };
 
-//MenuPage_obj *MenuPages[END_OF_MENU];
-
-//MenuPage_obj Menu_Main(Items_MainMenu, sizeof(Items_MainMenu) / sizeof(Items_MainMenu[0]));
-//MenuPage_obj Menu_Settings(Items_SettingsMenu, sizeof(Items_SettingsMenu)/sizeof(Items_SettingsMenu[0]));
-//MenuPage_obj Menu_About(Items_AboutMenu, sizeof(Items_AboutMenu)/sizeof(Items_AboutMenu[0]));
-
 MenuPage_obj MenuPages[] = {
 	MenuPage_obj(Items_MainMenu, length(Items_MainMenu)),
 	MenuPage_obj(Items_ProgramMenu, length(Items_ProgramMenu)),
@@ -77,11 +74,13 @@ MenuItem_obj::MenuItem_obj(){};
 
 MenuItem_obj::MenuItem_obj(char *button_label){
 	this->Label = button_label;
+	this->type = TEXT;
 };
 
 //Function
-MenuItem_obj::MenuItem_obj(char *button_label, void *function(void)){
+MenuItem_obj::MenuItem_obj(char *button_label, void (*function)()){
 	this->Label = button_label;
+	this->buttonFunction = function;
 	this->type = FUNCTION;
 };
 
@@ -92,8 +91,10 @@ MenuItem_obj::MenuItem_obj(char *button_label, MenuPageList menuPage){
 	this->type = MENUCHANGE;
 }
 
-MenuItem_obj::MenuItem_obj(char *button_label, void *setValue(int8_t), uint16_t *getValue){
-	this->
+MenuItem_obj::MenuItem_obj(char *button_label, char (*get)()){
+	this->Label = button_label;
+	this->getData = get;
+	this->type = FIELD;
 }
 
 void MenuItem_obj::Draw(){
@@ -120,7 +121,10 @@ void MenuItem_obj::Draw(){
 
 void MenuItem_obj::itemSelect(){
 	switch(type){
+		case TEXT:
+			break;
 		case FUNCTION:
+			buttonFunction();
 			break;
 		case FIELD:
 			break;
@@ -208,8 +212,8 @@ void GUI_obj::Update(){
 
 void GUI_obj::DrawScreen(){
 	MenuPage[Current_Page].Draw();
-	//Display.gotoXY(50,0);
-	//Display.Write(Current_Page);
+	Display.gotoXY(48, 0);
+	Display.Write(to_char(testValue));
 };
 
 void GUI_obj::TestScreen(){
@@ -257,3 +261,14 @@ void GUI_obj::Handle_Scroll(int8_t scrollChange){
 	HID_Dial.count = 0;
 };
 
+//___________________String Conversions_______________________
+
+char *to_char(int16_t value){
+	static char buff[7];
+	return itoa(value, buff, 10);
+};
+
+char *to_char(float value){
+	static char buff[10];
+	return dtostrf(value, 5, 1, buff);	
+};
