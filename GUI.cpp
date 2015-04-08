@@ -21,6 +21,10 @@
 LCD_8544 Display;
 
 int16_t testValue = 0;
+float testFloat = 0;
+
+enum mocoModes {TIMELAPSE = 0, VIDEO = 1, ANIMATION = 2, DRAGONFRAME = 3, PC = 4, END_OF_MODES = 5};
+int8_t selectedMode = TIMELAPSE;
 
 void set_testValue(){
 	testValue++;
@@ -28,23 +32,67 @@ void set_testValue(){
 	//else if(testValue > 50) testValue = 50;
 };
 
-int16_t get_testValue(){
-	return testValue;
+void set_Mode(int8_t setVal){
+	selectedMode += setVal;
+	if(selectedMode >= END_OF_MODES) selectedMode = END_OF_MODES - 1;
+	else if(selectedMode < 0) selectedMode = 0;
+}
+
+char *get_Mode(){
+	switch(selectedMode){
+		case TIMELAPSE:
+			return "TimeLps";
+			break;
+		case VIDEO:
+			return "Video";
+			break;
+		case ANIMATION:
+			return "Anim";
+			break;
+		case DRAGONFRAME:
+			return "DrgnFrm";
+			break;
+		case PC:
+			return "PC";
+			break;
+		default:
+			selectedMode = TIMELAPSE;
+			break;
+	}
+}
+char *get_testValue(){
+	return to_char(testValue);
 };
+
+char *get_testFloat(){
+	return to_char(testFloat);
+}
+
+void set_testValue(int8_t setVal){
+	testValue += setVal;
+	if(testValue > 100) testValue = 100;
+}
+
+void set_testFloat(int8_t setVal){
+	testFloat += setVal * 0.1;
+	if(testFloat > 9999.9) testFloat = 9999.9;
+}
+
+
 
 
 
 //______________________ GENERATE MENU  ______________________________
 
 MenuItem_obj Items_MainMenu[] = {
-	MenuItem_obj("Mode:"),
+	MenuItem_obj("Mode:", get_Mode, set_Mode),
 	MenuItem_obj("RUN"),
 	MenuItem_obj("RETURN"),
 	MenuItem_obj("Program", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
 	MenuItem_obj("About", ABOUT),
-	MenuItem_obj("Extra1", set_testValue),
-	MenuItem_obj("Haii", to_char(get_testValue()))
+	MenuItem_obj("Extra:", get_testValue, set_testValue),
+	MenuItem_obj("Haii:", get_testFloat, set_testFloat)
 };
 
 MenuItem_obj Items_ProgramMenu[] = {
@@ -91,33 +139,38 @@ MenuItem_obj::MenuItem_obj(char *button_label, MenuPageList menuPage){
 	this->type = MENUCHANGE;
 }
 
-MenuItem_obj::MenuItem_obj(char *button_label, char (*get)()){
+MenuItem_obj::MenuItem_obj(char *button_label, char *(*get)(), void (*set)(int8_t)){
 	this->Label = button_label;
 	this->getData = get;
+	this->setData = set;
 	this->type = FIELD;
 }
 
 void MenuItem_obj::Draw(){
 	Display.Write(Label);
-	/*
+	
+	
+};
+
+void MenuItem_obj::Draw_Data(){
 	//Display.Write(Label);
-	switch(Type){
-		case BUTTON:
+	switch(type){
+		case TEXT:
 			//write nothing
 			break;
-		case LIST:
+		case FUNCTION:
 			//Display.Write() //write selected item
 			break;
-		case INCREMENT:
-			//Display.Write() //write selected number
+		case FIELD:
+			//Display.Write(":");
+			Display.Write(getData()); //write selected number
+			break;
+		case MENUCHANGE:
 			break;
 		default:
 			break; //write nothing
-		
-	}
-	//Display.Write();
-	*/
-};
+	}	
+}
 
 void MenuItem_obj::itemSelect(){
 	switch(type){
@@ -127,6 +180,8 @@ void MenuItem_obj::itemSelect(){
 			buttonFunction();
 			break;
 		case FIELD:
+			GUI.itemSelected = true;
+			GUI.scrollTarget = setData;
 			break;
 		case MENUCHANGE:
 			GUI.setMenuPosition(menuLink); 
@@ -137,7 +192,22 @@ void MenuItem_obj::itemSelect(){
 };
 
 void MenuItem_obj::itemDeselect(){
-	
+		switch(type){
+			case TEXT:
+				break;
+			case FUNCTION:
+				buttonFunction();
+				break;
+			case FIELD:
+				GUI.itemSelected = false;
+				//GUI.scrollTarget = setData;
+				break;
+			case MENUCHANGE:
+				GUI.setMenuPosition(menuLink);
+				break;
+			default:
+				break;
+		}
 };
 
 //___________________________ MENU PAGES _______________________________
@@ -157,9 +227,17 @@ void MenuPage_obj::Draw(){
 	{
 		Display.gotoXY(0, drawLine);
 		//set font to inverted when drawing menu item at CursorPosition
-		if (drawLine == (CursorPosition - DrawPosition)) Display.setStyle(INVERT);
-		MenuItem[DrawPosition + drawLine].Draw();
-		Display.setStyle(NONE);
+		if (drawLine == (CursorPosition - DrawPosition)){
+			Display.setStyle(INVERT);
+			MenuItem[DrawPosition + drawLine].Draw();
+			if(!GUI.itemSelected) Display.setStyle(NONE);
+			MenuItem[DrawPosition + drawLine].Draw_Data();
+			Display.setStyle(NONE);
+		}
+		else{
+			MenuItem[DrawPosition + drawLine].Draw();
+			MenuItem[DrawPosition + drawLine].Draw_Data();
+		}
 		drawLine++;
 	}
 	//help debug LCD menu scrolling
@@ -212,8 +290,8 @@ void GUI_obj::Update(){
 
 void GUI_obj::DrawScreen(){
 	MenuPage[Current_Page].Draw();
-	Display.gotoXY(48, 0);
-	Display.Write(to_char(testValue));
+	//Display.gotoXY(40, 0);
+	//Display.Write(itemSelected);
 };
 
 void GUI_obj::TestScreen(){
@@ -246,7 +324,12 @@ void GUI_obj::Handle_Button(Button::ButtonStates state){
 			break;	
 			
 		case Button::RELEASE:
-			item->itemSelect();
+			if(itemSelected){
+				item->itemDeselect();
+			}
+			else{
+				item->itemSelect();
+			}
 			break;
 			
 		default:
@@ -257,7 +340,12 @@ void GUI_obj::Handle_Button(Button::ButtonStates state){
 void GUI_obj::Handle_Scroll(int8_t scrollChange){
 	HID_Dial.Changed = false;
 	
-	MenuPage[Current_Page].setCursorPosition(HID_Dial.count);
+	if(itemSelected){
+		scrollTarget(HID_Dial.count);
+	}
+	else{
+		MenuPage[Current_Page].setCursorPosition(HID_Dial.count);
+	}
 	HID_Dial.count = 0;
 };
 

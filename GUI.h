@@ -36,9 +36,9 @@ struct HID_Event{
 void linkMenus();
 
 //extern uint16_t testValue;
-void set_testValue();
+//void set_testValue();
 
-int16_t get_testValue();
+//int16_t get_testValue();
 
 char *to_char(int16_t value);
 char *to_char(float value);
@@ -56,11 +56,12 @@ public:
 	//Menu change
 	MenuItem_obj(char *button_label, MenuPageList menuPage);
 	//Data display and modify
-	MenuItem_obj(char *button_label, char (*get)());
+	MenuItem_obj(char *button_label, char *(*get)(), void (*set)(int8_t));
 	//MenuItem_obj(char *button_label, float (*get)(),	void (*set)(int8_t));
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
 	
 	void Draw();
+	void Draw_Data();
 	
 	void itemSelect();
 	void itemDeselect();
@@ -70,7 +71,8 @@ public:
 	ItemType type;
 	char *Label; //location of button label
 	void (*buttonFunction)();
-	char (*getData)();
+	char *(*getData)();
+	void (*setData)(int8_t);
 	MenuPageList menuLink;
 private:
 
@@ -112,15 +114,19 @@ public:
 	
 	void setMenuPosition(MenuPageList page);
 	
-	//enum MenuPage {MAIN, TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME, SETTINGS, ABOUT};
-	//enum MocoMode {TIMELAPSE, VIDEO, ANIMATION, DRAGONFRAME};
-		
+	void (*scrollTarget)(int8_t);
+	//void setScrollTarget(*function(int8_t));
+			
 	uint8_t Current_Mode;
 	uint8_t Current_Page;
+	
+	bool itemSelected;
 	
 	uint8_t numberOfMenus; //number of menu pages
 	MenuPage_obj *MenuPage; //menu page array
 private:
+	
+	
 	void Handle_Button(Button::ButtonStates state);
 	void Handle_Scroll(int8_t scrollChange);
 };

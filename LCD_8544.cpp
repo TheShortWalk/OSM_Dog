@@ -77,6 +77,12 @@ void LCD_8544::Write(int number){
 	this->Write(str);
 }
 
+void LCD_8544::Write(float number){
+	char str[7];
+	dtostrf(number, 6, 1, str);
+	this->Write(str);
+}
+
 //writes a custom 5x8 symbol to the screen
 void LCD_8544::Write(const uint8_t *symbol){
 	uint8_t buf[5];
