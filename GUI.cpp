@@ -13,9 +13,13 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <stdlib.h>
+#include <string.h>
 #include "GUI.h"
 #include "LCD_8544.h"
 #include "HID_Components.h"
+#include "MainController.h"
+
+MainController_obj Moco;
 
 
 LCD_8544 Display;
@@ -25,6 +29,8 @@ float testFloat = 0;
 
 enum mocoModes {TIMELAPSE = 0, VIDEO = 1, ANIMATION = 2, DRAGONFRAME = 3, PC = 4, END_OF_MODES = 5};
 int8_t selectedMode = TIMELAPSE;
+enum AxisNames {DOLLY, PAN, FOCUS, END_OF_AXIS};
+int8_t selectedAxis = DOLLY;
 
 void set_testValue(){
 	testValue++;
@@ -41,25 +47,26 @@ void set_Mode(int8_t setVal){
 char *get_Mode(){
 	switch(selectedMode){
 		case TIMELAPSE:
-			return "TimeLps";
+			return "TimeLapse";
 			break;
 		case VIDEO:
 			return "Video";
 			break;
 		case ANIMATION:
-			return "Anim";
+			return "Animate";
 			break;
 		case DRAGONFRAME:
-			return "DrgnFrm";
+			return "DragonFrm";
 			break;
 		case PC:
-			return "PC";
+			return "PC-Link";
 			break;
 		default:
 			selectedMode = TIMELAPSE;
 			break;
 	}
 }
+
 char *get_testValue(){
 	return to_char(testValue);
 };
@@ -78,6 +85,28 @@ void set_testFloat(int8_t setVal){
 	if(testFloat > 9999.9) testFloat = 9999.9;
 }
 
+void set_Axis(int8_t setVal){
+	selectedAxis += setVal;
+	if(selectedAxis >= END_OF_AXIS) selectedAxis = END_OF_AXIS - 1;
+	else if(selectedAxis < 0) selectedAxis = 0;
+}
+	
+char *get_Axis(){
+	switch(selectedAxis){
+		case DOLLY:
+			return "Dolly";
+			break;
+		case PAN:
+			return "Pan";
+			break;
+		case FOCUS:
+			return "Focus";
+			break;
+		default:
+			selectedMode = DOLLY;
+			break;
+	}
+}
 
 
 
@@ -85,9 +114,9 @@ void set_testFloat(int8_t setVal){
 //______________________ GENERATE MENU  ______________________________
 
 MenuItem_obj Items_MainMenu[] = {
-	MenuItem_obj("Mode:", get_Mode, set_Mode),
-	MenuItem_obj("RUN"),
-	MenuItem_obj("RETURN"),
+	MenuItem_obj(get_Mode, set_Mode),
+	MenuItem_obj("Run"),
+	MenuItem_obj("Return"),
 	MenuItem_obj("Program", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
 	MenuItem_obj("About", ABOUT),
@@ -96,6 +125,15 @@ MenuItem_obj Items_MainMenu[] = {
 };
 
 MenuItem_obj Items_ProgramMenu[] = {
+	MenuItem_obj(get_Axis, set_Axis),
+	MenuItem_obj("<  Point:1 >"),
+	MenuItem_obj("------------"),
+	MenuItem_obj("Pos:      10"),
+	MenuItem_obj("Time:      0"),
+	MenuItem_obj("Smooth:    4"),
+	MenuItem_obj("------------"),
+	MenuItem_obj("Add Point  "),
+	MenuItem_obj("Delete Point"),
 	MenuItem_obj("Back", MAIN)
 };
 
@@ -139,6 +177,7 @@ MenuItem_obj::MenuItem_obj(char *button_label, MenuPageList menuPage){
 	this->type = MENUCHANGE;
 }
 
+//ItemIncrement
 MenuItem_obj::MenuItem_obj(char *button_label, char *(*get)(), void (*set)(int8_t)){
 	this->Label = button_label;
 	this->getData = get;
@@ -146,9 +185,33 @@ MenuItem_obj::MenuItem_obj(char *button_label, char *(*get)(), void (*set)(int8_
 	this->type = FIELD;
 }
 
+//ListIncrement
+MenuItem_obj::MenuItem_obj(char *(*get)(), void (*set)(int8_t)){
+	this->getData = get;
+	this->setData = set;
+	this->type = LIST;
+}
+
 void MenuItem_obj::Draw(){
-	Display.Write(Label);
-	
+	switch(type){
+		case TEXT:
+			Display.Write(Label);
+			break;
+		case FUNCTION:
+			Display.Write(Label);
+			break;
+		case FIELD:
+			Display.Write(Label);
+			break;
+		case LIST:
+			Display.gotoAlignX(LEFT), Display.Write("<");
+			Display.gotoAlignX(RIGHT), Display.Write(">");
+			break;
+		case MENUCHANGE:
+			Display.Write(Label);
+			break;
+		
+	}	
 	
 };
 
@@ -162,10 +225,16 @@ void MenuItem_obj::Draw_Data(){
 			//Display.Write() //write selected item
 			break;
 		case FIELD:
-			//Display.Write(":");
+			Display.gotoAlignX(RIGHT, strlen(getData()));
 			Display.Write(getData()); //write selected number
 			break;
+		case LIST:
+			Display.gotoAlignX(CENTER, strlen(getData()));
+			Display.Write(getData());
+			break;
 		case MENUCHANGE:
+			Display.gotoAlignX(RIGHT, 1);
+			Display.Write(Symb_Arrow);
 			break;
 		default:
 			break; //write nothing
@@ -180,6 +249,10 @@ void MenuItem_obj::itemSelect(){
 			buttonFunction();
 			break;
 		case FIELD:
+			GUI.itemSelected = true;
+			GUI.scrollTarget = setData;
+			break;
+		case LIST:
 			GUI.itemSelected = true;
 			GUI.scrollTarget = setData;
 			break;
@@ -201,6 +274,9 @@ void MenuItem_obj::itemDeselect(){
 			case FIELD:
 				GUI.itemSelected = false;
 				//GUI.scrollTarget = setData;
+				break;
+			case LIST:
+				GUI.itemSelected = false;
 				break;
 			case MENUCHANGE:
 				GUI.setMenuPosition(menuLink);
@@ -296,7 +372,11 @@ void GUI_obj::DrawScreen(){
 
 void GUI_obj::TestScreen(){
 		Display.Clear();
-		Display.gotoXY(0,0), Display.Write("Mode:TimeLps");
+		Display.gotoXY(0,0);
+		//char temp[] = "hello";
+		Display.gotoAlignX(CENTER, 5);
+		Display.Write("hello");
+		/*
 		Display.gotoXY(0,1), Display.Write("RUN");
 		Display.gotoXY(0, 2), Display.Write("RETURN");
 		Display.gotoXY(0, 3), Display.Write("Program");
@@ -305,6 +385,7 @@ void GUI_obj::TestScreen(){
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
 		Display.gotoXY(0, 5), Display.Write("About");
 		Display.gotoAlignX(RIGHT), Display.Write(Symb_Arrow);
+		*/
 };
 
 void GUI_obj::setMenuPosition(MenuPageList page){
@@ -360,3 +441,12 @@ char *to_char(float value){
 	static char buff[10];
 	return dtostrf(value, 5, 1, buff);	
 };
+/*
+uint8_t length_str(char *str){
+	uint8_t len = 0;
+	while(*str){
+		len++;
+		*str++;
+	}
+	return len;
+}*/

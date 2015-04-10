@@ -11,7 +11,6 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <stdint.h>
-//#include "MainController.h"
 #include "LCD_8544.h"
 #include "HID_Components.h"
 
@@ -25,28 +24,16 @@ enum MenuPageList {MAIN, PROGRAM, SETTINGS, ABOUT, END_OF_MENU};
 //MainController_obj Moco;
 //LCD_8544 Display;
 
-//the types of user input
-/*
-struct HID_Event{
-	bool buttonPress;
-	int8_t scrollIncrement;
-};*/
-
-//One item in the menu
 void linkMenus();
-
-//extern uint16_t testValue;
-//void set_testValue();
-
-//int16_t get_testValue();
 
 char *to_char(int16_t value);
 char *to_char(float value);
+//uint8_t length_str(char *str);
 
 
 class MenuItem_obj{
 public:
-	enum ItemType {TEXT, FUNCTION, FIELD, MENUCHANGE};
+	enum ItemType {TEXT, FUNCTION, FIELD, LIST, MENUCHANGE};
 		
 	MenuItem_obj();
 	//Label
@@ -57,6 +44,8 @@ public:
 	MenuItem_obj(char *button_label, MenuPageList menuPage);
 	//Data display and modify
 	MenuItem_obj(char *button_label, char *(*get)(), void (*set)(int8_t));
+	
+	MenuItem_obj(char *(*get)(), void (*set)(int8_t));
 	//MenuItem_obj(char *button_label, float (*get)(),	void (*set)(int8_t));
 	//MenuItem_obj(const char *button_label, bool *scroll_function);
 	

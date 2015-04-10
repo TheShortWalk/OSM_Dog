@@ -27,6 +27,8 @@
 #define LCD_Y     48
 #define LCD_CMD   0
 #define LCD_ROWS	6
+#define CHARACTER_WIDTH	5
+#define CHARACTER_GAP	2 //characters have 1 pix gap on right/left
 
 enum FontStyle {UNDERLINE, STRIKETHROUGH, INVERT, NONE};
 enum CursorAllignment {LEFT, CENTER, RIGHT};
@@ -48,7 +50,7 @@ public:
 	void Fill();
 	
 	void gotoXY(uint16_t x, uint16_t y);
-	void gotoAlignX(CursorAllignment position);
+	void gotoAlignX(CursorAllignment position, uint8_t length = 1);
 	
 private:
 	bool activeStyle[3]; //3 font styles
@@ -162,5 +164,6 @@ static const PROGMEM uint8_t ASCII[][5] = {
 
 static const PROGMEM uint8_t Symb_Arrow[5]	= { 0x08, 0x08, 0x3e, 0x1c, 0x08 };
 static const PROGMEM uint8_t Symb_Return[5]	= { 0x44, 0x46, 0x7f, 0x06, 0x04 };
+static const PROGMEM uint8_t Symb_Skull[5]	= { 0x9d, 0x6a, 0x52, 0x6a, 0x9d };
 
 #endif //__LCD_8544_H__

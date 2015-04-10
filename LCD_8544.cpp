@@ -116,19 +116,23 @@ void LCD_8544::gotoXY(uint16_t x, uint16_t y){
 	this->LcdSend(0, 0x40 | y); //row
 }
 
-void LCD_8544::gotoAlignX(CursorAllignment position){
+void LCD_8544::gotoAlignX(CursorAllignment position, uint8_t length){
 	uint16_t x;
+	uint16_t pixel_length = (length * CHARACTER_WIDTH + (length) * CHARACTER_GAP);
 	switch (position)
 	{
 		case LEFT:
 			x = 0;
 			break;
-		case CENTER:
-			x = (LCD_X / 2) - 6;
+			
+		case CENTER: 
+			x = ((LCD_X - pixel_length) / 2) - 1;
 			break;
+			
 		case RIGHT:
-			x = (LCD_X) - 6;
+			x = (LCD_X) - (pixel_length) - 1;
 			break;
+			
 		default:
 			x = 0;
 			break;
