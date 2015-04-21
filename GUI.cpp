@@ -17,7 +17,7 @@
 #include "GUI.h"
 #include "LCD_8544.h"
 #include "HID_Components.h"
-#include "MainController.h"
+//#include "MainController.h"
 
 MainController_obj Moco;
 
@@ -108,6 +108,59 @@ char *get_Axis(){
 	}
 }
 
+void set_timelapseFrames(int8_t setVal){
+	int16_t temp = Moco.frames_timelapse + setVal;
+	if(temp < 0) Moco.frames_timelapse = 0;
+	else Moco.frames_timelapse = temp;
+}
+
+char *get_timelapseFrames(){
+	return to_char((int16_t)Moco.frames_timelapse);
+}
+
+char *get_Position(){
+	return to_char((int16_t)Moco.Axis[selectedAxis].Motion.Segment[0].finish.steps);
+}
+void set_Position(int8_t setVal){
+	Point_obj *target = &Moco.Axis[selectedAxis].Motion.Segment[0].finish;
+	target->steps += setVal * 100;
+}
+
+char *get_Time(){
+	return to_char(Moco.Axis[selectedAxis].Motion.Segment[0].finish.seconds);
+}
+
+void set_Time(int8_t setVal){
+	Point_obj *target = &Moco.Axis[selectedAxis].Motion.Segment[0].finish;
+	target->seconds += setVal * 0.5;
+}
+
+char *get_Smooth(){
+	return to_char((int16_t)Moco.Axis[selectedAxis].Motion.Segment[0].smoothing);
+}
+void set_Smooth(int8_t setVal){
+	Segment_obj *target = &Moco.Axis[selectedAxis].Motion.Segment[0];
+	int16_t temp = target->smoothing + setVal;
+	if(temp < 0) target->smoothing = 0;
+	else if(temp > 10) target->smoothing = 10;
+	else target->smoothing = temp;
+}
+
+//Moco Functions
+void runTimelapse(){
+	//Moco.frames_timelapse = 10;
+	Moco.RunTimelapse();
+}
+
+void gotoFin(){
+	Moco.CalculateAllMoves();
+	Moco.gotoTime(Moco.Axis[selectedAxis].Motion.Segment[0].finish.seconds, 1);
+}
+
+void gotoStart(){
+	Moco.CalculateAllMoves();
+	Moco.gotoTime(Moco.Axis[selectedAxis].Motion.Segment[0].start.seconds, 1);
+}
 
 
 
@@ -115,7 +168,8 @@ char *get_Axis(){
 
 MenuItem_obj Items_MainMenu[] = {
 	MenuItem_obj(get_Mode, set_Mode),
-	MenuItem_obj("Run"),
+	MenuItem_obj("Pics:", get_timelapseFrames, set_timelapseFrames),
+	MenuItem_obj("Run", runTimelapse),
 	MenuItem_obj("Return"),
 	MenuItem_obj("Program", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
@@ -128,10 +182,12 @@ MenuItem_obj Items_ProgramMenu[] = {
 	MenuItem_obj(get_Axis, set_Axis),
 	MenuItem_obj("<  Point:1 >"),
 	MenuItem_obj("------------"),
-	MenuItem_obj("Pos:      10"),
-	MenuItem_obj("Time:      0"),
-	MenuItem_obj("Smooth:    4"),
+	MenuItem_obj("Pos:", get_Position, set_Position),
+	MenuItem_obj("Time:", get_Time, set_Time),
+	MenuItem_obj("Smooth:", get_Smooth, set_Smooth),
 	MenuItem_obj("------------"),
+	MenuItem_obj("start", gotoStart),
+	MenuItem_obj("finish", gotoFin),
 	MenuItem_obj("Add Point  "),
 	MenuItem_obj("Delete Point"),
 	MenuItem_obj("Back", MAIN)
@@ -324,7 +380,7 @@ void MenuPage_obj::Draw(){
 //handles scrolling of the menu
 void MenuPage_obj::setCursorPosition(int8_t scrollValue){
 	//Prevent cursor from scrolling off menu
-	CursorPosition += scrollValue;
+	CursorPosition -= scrollValue;
 	if(CursorPosition < 0) CursorPosition = 0;
 	else if(CursorPosition >= numberOfItems) CursorPosition = numberOfItems - 1;
 	

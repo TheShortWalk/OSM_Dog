@@ -61,6 +61,15 @@ void AxisMotion_obj::PrintMove() {
 	}
 }
 
+int32_t AxisMotion_obj::getStep_AtTime(float time_seconds){
+	//return step position at given time
+	volatile uint8_t seg = getSegment(time_seconds);
+	volatile float startTime = Segment[seg].start.seconds;
+	volatile float relativeTime = time_seconds - startTime;
+	volatile int32_t tempreturn = Segment[seg].getStep(relativeTime);
+	return tempreturn;
+}
+
 //-----PRIVATE FUNCTIONS----------
 
 void AxisMotion_obj::CalculateTotals(){
@@ -70,13 +79,24 @@ void AxisMotion_obj::CalculateTotals(){
 		totalSegmentSteps[i] = total;
 	}
 	totalSteps = total;
-	totalSeconds = Segment[totalSegments].finish.seconds;
+	totalSeconds = Segment[totalSegments - 1].finish.seconds;
 }
 
 uint8_t AxisMotion_obj::getSegment(uint32_t StepNumber){
 	//uint8_t segmentNumber;
 	for(uint8_t i = 0; i < totalSegments; i++){
 		if(StepNumber <= totalSegmentSteps[i]){
+			return i;
+		}
+	}
+	//end of move
+	return 0;
+}
+
+uint8_t AxisMotion_obj::getSegment(float time_seconds){
+	for (uint8_t i = 0; i < totalSegments; i++){
+		if (time_seconds < Segment[i].finish.seconds)
+		{
 			return i;
 		}
 	}

@@ -20,6 +20,8 @@
 #define PIN_CE		(1 << PORTB5)	// D9
 //#define PINS_CE_DC	(PIN_DC | PIN_CE)
 
+#define LCD_BACKLIGHT 
+
 #define LCD_C     0
 #define LCD_D     1
 

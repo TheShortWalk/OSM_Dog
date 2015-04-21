@@ -15,7 +15,6 @@ AxisController_obj::AxisController_obj(volatile uint8_t *stepPort, uint8_t stepB
 	this->motorPin.directionPin._port = directionPort;
 	this->motorPin.directionPin._bit = 1 << directionBit;
 	
-	
 }
 
 uint32_t AxisController_obj::getCurrentPosition(){

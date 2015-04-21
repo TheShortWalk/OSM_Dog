@@ -6,8 +6,12 @@ Insert Legal crap here.
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#define F_CPU 16000000UL
+#include <util/delay.h>
+#include <stdlib.h>
 #include "MainController.h"
 #include "AxisController.h"
+#include "GUI.h"
 
 MainController_obj *ControllerPointer;
 volatile uint16_t OverflowCounter = 0;
@@ -16,8 +20,6 @@ volatile uint16_t OverflowCounter = 0;
 
 MainController_obj::MainController_obj()
 {
-	//this->Axis[0] = AxisController_obj(&PORTB, 7, &PORTD, 7);
-	//this->Axis[1] = AxisController_obj(&PORTB, 6, &PORTC, 6);
 	ControllerPointer = this; //store location of Axis objects for ISR
   //this->NUM_AXIS = sizeof(Axis)/sizeof(Axis[0]);
 };
@@ -48,8 +50,9 @@ void MainController_obj::RunMove()
   //Axis[0].Buffer.TimerCompare[0] = 5000;
   //Axis[1].Buffer.TimerCompare[0] = 5000;
   
-  PINB = (1 << 7);
-  PINB = (1 << 6);
+  //temporarily set direction
+  PORTB = (1 << PORTB7);
+  PORTB = (1 << PORTB6);
 
   cli(); //disable interrupts
   
@@ -95,6 +98,7 @@ void MainController_obj::RunMove()
   //Check motor home
 }
 
+/*
 void MainController_obj::RunMoveTEST(){
   CalculateAllMoves();
   //PrintMoves();
@@ -107,6 +111,7 @@ void MainController_obj::RunMoveTEST(){
 	}
   }
 }
+*/
 
 void MainController_obj::PauseMove() {
   //disable ISR
@@ -126,8 +131,35 @@ void MainController_obj::HomeMove() {
 
 void MainController_obj::RunVideo() {
 }
-//void RunTimelapse();
-//void RunAnimation();
+
+void MainController_obj::RunTimelapse(){
+	//frames_timelapse = 10;
+	CalculateAllMoves();
+	float moveTime = getMoveTime();
+	float frame_delay = moveTime / (frames_timelapse - 1);
+	int16_t frame_current = 1;
+	while(frame_current <= frames_timelapse){
+		
+		//shutter down
+		frame_current++;
+		Display.Clear();
+		Display.gotoXY(0,0);
+		Display.Write("Pic:"), Display.Write((int16_t)frame_current);
+		PORTF |= (1<<PORTF7);
+		PORTC |= (1<<PORTC7);
+		//shutter off
+		
+		_delay_ms(3000);
+		PORTF &= ~(1<<PORTF7);
+		PORTC &= ~(1<<PORTC7);
+		
+		float nextframe_time = frame_delay * frame_current;
+		if (nextframe_time > moveTime) nextframe_time = moveTime;
+		gotoTime(nextframe_time);
+	}
+}
+
+void MainController_obj::RunAnimation(){}
 
 void MainController_obj::CalculateAllMoves() {
   for (int i = 0; i < NUM_AXIS; i++) {
@@ -154,9 +186,77 @@ void MainController_obj::PrintMoves() {
   }
 }
 
+float MainController_obj::getMoveTime(){
+	float longestTime = 0;
+	for(uint8_t i = 0; i < NUM_AXIS; i++){
+		float totalTime_axis = Axis[i].Motion.totalSeconds;
+		if(totalTime_axis > longestTime) longestTime = totalTime_axis;
+	}
+	return longestTime;
+}
+
+void MainController_obj::gotoStep(AxisController_obj *target, int32_t step){
+	
+	//target->Motion.gotoSegment.start.set(target->getCurrentPosition(), 0);
+	//target->Motion.gotoSegment.finish.set(step, 2);
+	//target->Motion.gotoSegment.CalcSegment();
+	
+	
+}
+
+void MainController_obj::gotoStep(AxisController_obj *target, float time_seconds){
+	//gotoStep(target, target->Motion.getStep_AtTime(time_seconds));
+	
+}
+
+void MainController_obj::gotoTime(float time_seconds, bool spd){
+	//CalculateAllMoves();
+	//shitty temp program
+	int32_t position[NUM_AXIS];
+	int32_t dist[NUM_AXIS];
+	bool dir[NUM_AXIS];
+	uint8_t enabled = 0; //disable all motors
+	
+	for(uint8_t i = 0; i < NUM_AXIS; i++){
+		position[i] = MICROSTEPS * Axis[i].Motion.getStep_AtTime(time_seconds);
+		dir[i] = 0;
+		//set direction
+		IO_pin_struct *pinTarget = &Axis[i].motorPin.directionPin;
+		*pinTarget->_port &= pinTarget->_bit; //clear pin
+		if(position[i] - Axis[i].currentPosition > 0){
+			dir[i] = 1;
+			*pinTarget->_port |= pinTarget->_bit;//set pin if +direction
+		}
+		if(position[i] != Axis[i].currentPosition) enabled |= (1<<i); //enable stepping
+		//set direction
+	}
+	
+	//move motors
+	while(enabled){
+		//turn step pin HIGH
+		for(uint8_t i = 0; i < NUM_AXIS; i++){
+			//don't step if finished
+			if((enabled & (1<<i))){
+				IO_pin_struct *target = &Axis[i].motorPin.stepPin;
+				*target->_port |= target->_bit; //Step HIGH
+				if(dir[i]) Axis[i].currentPosition++;
+				else Axis[i].currentPosition--;
+				if(Axis[i].currentPosition == position[i]) enabled &= ~(1<<i);  //disable stepping
+			}
+		}
+		//at least 1us for step signal
+		for(uint8_t i = 0; i < NUM_AXIS; i++){
+			IO_pin_struct *target = &Axis[i].motorPin.stepPin;
+			*target->_port &= ~target->_bit;
+		}
+		//motor step delay
+		if(spd) _delay_us(500);
+		else _delay_us(2000);
+	}
+}
 
 //---------------------ISRs------------------------------------
-
+/*
 inline void handle_overflow_interrupt() {
   //PORTE |= 0b01000000; //twiddle on
   //increase overflow counter
@@ -193,6 +293,8 @@ inline void handle_timer_interrupt(uint8_t targetAxis, volatile uint8_t *TIMSKn,
   }
   
   *OCRnx = activeBuffer->TimerCompare[activeBuffer->PullPos]; //load next timer value, doesn't matter if it's in a future cycle
+  
+  //ControllerPointer->Axis[targetAxis].currentPosition
 
   *activeMotor->stepPin._port &= ~activeMotor->stepPin._bit; //turn step pin off
 }
@@ -210,6 +312,7 @@ ISR(TIMER1_COMPA_vect) {
 ISR(TIMER1_COMPB_vect) {
   handle_timer_interrupt(1, &TIMSK1, &OCR1B, OCIE1B);
 }
+*/
 
 /*
 ISR(TIMER1_COMPC_vect){

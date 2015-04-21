@@ -4,6 +4,9 @@ Copyright (C) 2014 William Osman <theshortwalk@gmail.com>
 Insert Legal crap here.
 */
 
+//v = a*t + v0
+//p = (1/2)a*t^2 + v0*t + p0
+
 #include <avr/io.h>
 #include <stdlib.h>
 #include <math.h>
@@ -64,6 +67,34 @@ uint32_t Segment_obj::getStepTimer(uint32_t Step)
   return ticks + (uint32_t)(start.seconds * 2000000.0);
 }
 
+//S-curve is generated using a trapezoidal velocity curve
+//the position function found by integrating the velocity
+//acceleration is constant
+//velocity = velocity_initial + acceleration * time
+//position = position_initial + velocitiy_initial * time + (acceleration * time^2) / 2
+
+int32_t Segment_obj::getStep(float time_seconds){
+	int32_t step;
+	volatile uint8_t subsegment = GetSubSegment(time_seconds);
+	switch (subsegment){
+		case 1:
+			step = acceleration * square(time_seconds) / 2;
+			break;
+		case 2:
+			step = velocity * (time_seconds - midPoint_A.seconds) + midPoint_A.steps;
+			break;
+		case 3:
+			//p = p= + a/2 * t
+			//p = p0 + a/2 * (tA^2 - (tA - (t - tB - tA))^2) 
+			//p = p0 + a/2 * (tA^2 - (2*tA + tB - t)^2)
+			float relataiveTime = time_seconds - midPoint_A.seconds - midPoint_B.seconds;
+			step = (midPoint_A.steps + midPoint_B.steps) + acceleration / 2 * (square(midPoint_A.seconds) - square(midPoint_A.seconds - relataiveTime));
+			//step = (midPoint_A.steps + midPoint_B.steps) + velocity * time_seconds + -1*acceleration / 2
+			break;
+	}
+	return step;
+}
+
 void Segment_obj::PrintSegment() {
 
 }
@@ -71,7 +102,7 @@ void Segment_obj::PrintSegment() {
 //Calculates all of the S-curve data 
 void Segment_obj::PreCalc()
 {
-  midPoint_A.steps = abs(finish.steps - start.steps) * smoothing / 20; //Steps_A = total_steps * smoothing / 20
+  midPoint_A.steps = (abs(finish.steps - start.steps) * smoothing) / 20; //Steps_A = total_steps * smoothing / 20
   midPoint_B.steps = abs(finish.steps - start.steps) - 2 * midPoint_A.steps; //Steps_B = total_steps - 2 * Steps_A
 
   acceleration = (float)square(4 * midPoint_A.steps + midPoint_B.steps) / (float)(2 * midPoint_A.steps * square(finish.seconds - start.seconds)); //a = (4*Steps_A + Steps_B)^2/(2*Steps_A * (Total_time)^2)
@@ -92,10 +123,15 @@ void Segment_obj::PreCalc()
   else Direction = 0;
 }
 
-int Segment_obj::GetSubSegment(long nextStep)
+uint8_t Segment_obj::GetSubSegment(uint32_t nextStep)
 {
   if (nextStep <= midPoint_A.steps) return 1; //if less than or equal to Steps_A : (first velocity line)
   else if (nextStep > midPoint_A.steps + midPoint_B.steps) return 3; //if greater than Steps_A + Steps_B : (third velocity line)
   else return 2; //if between Steps_A and (Steps_A + Steps_B) : (middle velocity line)
 }
 
+uint8_t Segment_obj::GetSubSegment(float time_seconds){
+	if(time_seconds <= midPoint_A.seconds) return 1;
+	else if(time_seconds > (midPoint_A.seconds + midPoint_B.seconds)) return 3;
+	else return 2;
+}

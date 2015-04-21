@@ -18,6 +18,7 @@ class AxisMotion_obj {
 	public:
 	AxisMotion_obj();
 	Segment_obj Segment[MAX_SEGMENTS];
+	Segment_obj gotoSegment;
 
 	uint32_t totalSteps; //absolute step of whole move
 	uint32_t totalSegmentSteps[MAX_SEGMENTS]; //absolute step of each segment
@@ -30,11 +31,13 @@ class AxisMotion_obj {
 	uint32_t StepTime(uint32_t StepNumber); //absolute time in counter ticks
 	bool StepDirection(uint32_t StepNumber);
 	void CalculateMove();
+	int32_t getStep_AtTime(float time_seconds);
 	void PrintMove();
 	
 	private:
 	void CalculateTotals();
 	uint8_t getSegment(uint32_t StepNumber);
+	uint8_t getSegment(float time_seconds);
 };
 
 #endif

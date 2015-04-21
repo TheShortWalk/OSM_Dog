@@ -39,11 +39,13 @@ class Segment_obj {
     void offset(int offsetSteps, float offsetSeconds);
     void CalcSegment();
     uint32_t getStepTimer(uint32_t Step);
+	int32_t getStep(float time_seconds);
     void PrintSegment();
 
   private:
     void PreCalc(); //Computes S-Curve for runtime
-    int GetSubSegment(int32_t nextStep);
+    uint8_t GetSubSegment(uint32_t nextStep);
+	uint8_t GetSubSegment(float time_seconds);
 
 };
 

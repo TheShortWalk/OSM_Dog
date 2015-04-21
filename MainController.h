@@ -71,7 +71,7 @@ class MainController_obj {
 	void PauseMove(); //Pause the program
 	void HomeMove(); //moves motor to start (moves motor)
 	//Motor Controls
-	void goToTime(float seconds);
+	//void goToTime(float seconds);
 	void goToPosition(int32_t steps);
 	//Manipulation
 	void SetLooping(bool enable);
@@ -91,6 +91,15 @@ class MainController_obj {
 	void RunVideo();
 	void RunTimelapse();
 	void RunAnimation();
+	
+	void gotoStep(AxisController_obj *target, int32_t step);		//move one motor to step position
+	void gotoStep(AxisController_obj *target, float time_seconds);	//move one motor to time
+	void gotoTime(float time_seconds, bool spd = 0);								//moves all motors to a time
+	
+	float getMoveTime();
+	
+//private:
+	uint16_t frames_timelapse; //number of pictures
 
 };
 

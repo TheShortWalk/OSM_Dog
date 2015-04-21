@@ -13,12 +13,16 @@
 #include <avr/interrupt.h>
 
 //Encoder Pins
-#define PIN_AB_PINn		PIND
-#define PIN_AB_DDRn		DDRD
-#define PIN_AB_PORTn	PORTD
+#define PIN_A_PINn		PIND
+#define PIN_A_DDRn		DDRD
+#define PIN_A_PORTn		PORTD
 #define PIN_A_PORTnx	PORTD0
-#define PIN_B_PORTnx	PORTD4
-#define PIN_B_PINnx		PIND4
+
+#define PIN_B_PINn		PINE
+#define PIN_B_DDRn		DDRE
+#define PIN_B_PORTn		PORTE
+#define PIN_B_PORTnx	PORTE6
+#define PIN_B_PINnx		PINE6
 
 //Button Pin
 #define PIN_BTN_PINn	PIND

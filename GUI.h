@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include "LCD_8544.h"
 #include "HID_Components.h"
+#include "MainController.h"
 
 #define SCREENSIZE_X 14 //characters per row
 #define SCREENSIZE_Y 6 //rows on screen
@@ -122,7 +123,9 @@ private:
 
 extern GUI_obj GUI;
 
+extern LCD_8544 Display;
 
+extern MainController_obj Moco;
 
 //Main Menu
 /*
