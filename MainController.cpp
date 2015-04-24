@@ -146,12 +146,10 @@ void MainController_obj::RunTimelapse(){
 		Display.gotoXY(0,0);
 		Display.Write("Pic:"), Display.Write((int16_t)frame_current);
 		PORTF |= (1<<PORTF7);
-		PORTC |= (1<<PORTC7);
 		//shutter off
 		
 		_delay_ms(3000);
 		PORTF &= ~(1<<PORTF7);
-		PORTC &= ~(1<<PORTC7);
 		
 		float nextframe_time = frame_delay * frame_current;
 		if (nextframe_time > moveTime) nextframe_time = moveTime;

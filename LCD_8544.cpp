@@ -21,7 +21,9 @@ LCD_8544::LCD_8544()
 
 void LCD_8544::Begin(){
 	SPI.begin();
-	PCD8544_DDR |= PIN_DC | PIN_CE;
+	PCD8544_DDR |= PIN_DC | PIN_CE; //config as output
+	PIN_BKLGHT_DDR |= PIN_BKLGHT; //config as output
+	PIN_BKLGHT_PORT &= ~PIN_BKLGHT; //turn backlight on
 	//PCD8544_PORT &= ~PIN_RESET;
 	//_delay_ms(1);
 	//PORTB |= PIN_RESET;

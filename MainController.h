@@ -71,8 +71,10 @@ class MainController_obj {
 	void PauseMove(); //Pause the program
 	void HomeMove(); //moves motor to start (moves motor)
 	//Motor Controls
-	//void goToTime(float seconds);
-	void goToPosition(int32_t steps);
+	void goToTime(float seconds);
+	void goToPosition(AxisController_obj *target, int32_t position);
+	void jogToTime(float seconds);
+	void jogToPosition(AxisController_obj *target, float position);
 	//Manipulation
 	void SetLooping(bool enable);
 	bool ScaleMove(float positionScale, float timeScale); //scales time
