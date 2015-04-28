@@ -254,7 +254,32 @@ void MainController_obj::gotoTimeTEMP(float time_seconds, bool spd){
 	}
 }
 
-//void MainController_obj::goToPosition()
+void MainController_obj::goToTime(float seconds){
+	//calculate position of each axis at given time
+	//setup tempSegments for each axis
+	//initialize buffer/ISR for each axis
+	for(uint8_t i = 0; i < NUM_AXIS; i++){
+		//AxisController_obj *axis = Axis[i].Motion
+		int32_t startPos = Axis[i].currentPosition / MICROSTEPS;
+		int32_t finishPos = Axis[i].Motion.getStep_AtTime(seconds);
+		int32_t steps = finishPos - startPos;
+		
+		//temp method for calculating a time for the move
+		//500steps/second is the safe assumed velocity
+		float moveTime = (float)steps / 500.0;
+		
+		Axis[i].Motion.transitionSegment.start.set(startPos,0);
+		Axis[i].Motion.transitionSegment.finish.set(finishPos,moveTime);
+		Axis[i].Motion.transitionSegment.smoothing = 5;
+		Axis[i].Motion.transitionSegment.CalcSegment();
+	}
+}
+
+void MainController_obj::goToPosition(AxisController_obj *axis, float position){
+	//calculate step using position and coef
+	//call gotoStep
+}
+
 
 //---------------------ISRs------------------------------------
 /*

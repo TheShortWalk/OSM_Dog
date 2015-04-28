@@ -18,7 +18,7 @@ class AxisMotion_obj {
 	public:
 	AxisMotion_obj();
 	Segment_obj Segment[MAX_SEGMENTS]; //Motion control path
-	Segment_obj gotoSegment; //temporary path for moving motors during setup
+	Segment_obj transitionSegment; //temporary path for moving motors during setup
 
 	uint32_t totalSteps; //absolute step of whole move
 	uint32_t totalSegmentSteps[MAX_SEGMENTS]; //absolute step of each segment

@@ -75,7 +75,7 @@ class MainController_obj {
 	
 	//Motor Controls
 	void goToTime(float seconds); //drive all motors to time
-	void goToPosition(AxisController_obj *target, int32_t position);
+	void goToPosition(AxisController_obj *axis, float position);
 	void jogToTime(float seconds);
 	void jogToPosition(AxisController_obj *target, float position);
 		
