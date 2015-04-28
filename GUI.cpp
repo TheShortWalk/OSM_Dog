@@ -154,12 +154,12 @@ void runTimelapse(){
 
 void gotoFin(){
 	Moco.CalculateAllMoves();
-	Moco.gotoTime(Moco.Axis[selectedAxis].Motion.Segment[0].finish.seconds, 1);
+	Moco.gotoTimeTEMP(Moco.Axis[selectedAxis].Motion.Segment[0].finish.seconds, 1);
 }
 
 void gotoStart(){
 	Moco.CalculateAllMoves();
-	Moco.gotoTime(Moco.Axis[selectedAxis].Motion.Segment[0].start.seconds, 1);
+	Moco.gotoTimeTEMP(Moco.Axis[selectedAxis].Motion.Segment[0].start.seconds, 1);
 }
 
 
@@ -171,7 +171,7 @@ MenuItem_obj Items_MainMenu[] = {
 	MenuItem_obj("Pics:", get_timelapseFrames, set_timelapseFrames),
 	MenuItem_obj("Run", runTimelapse),
 	MenuItem_obj("Return"),
-	MenuItem_obj("Program", PROGRAM),
+	MenuItem_obj("Path", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
 	MenuItem_obj("About", ABOUT),
 	MenuItem_obj("Extra:", get_testValue, set_testValue),

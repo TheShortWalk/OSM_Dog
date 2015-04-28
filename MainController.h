@@ -59,10 +59,12 @@ class MainController_obj {
 	
 	void SetModeType(ModeType modeSelect);
 	bool CheckSpeeds();
+	
 	//Storage
 	void DeleteMove(); //delete all keyframe data
 	bool SaveMove(char label[LABEL_LENGTH]); //save keyframes to EEPROM
 	void LoadMove(char label[LABEL_LENGTH]); //load keyframes from EEPROM
+	
 	//Program Controls
 	void RunMove(); //Begin the program (moves motors)
 	void RunMoveTEST(); //runs a test without moving motors
@@ -70,12 +72,18 @@ class MainController_obj {
 	void RunBuffer();
 	void PauseMove(); //Pause the program
 	void HomeMove(); //moves motor to start (moves motor)
+	
 	//Motor Controls
-	void goToTime(float seconds);
+	void goToTime(float seconds); //drive all motors to time
 	void goToPosition(AxisController_obj *target, int32_t position);
 	void jogToTime(float seconds);
 	void jogToPosition(AxisController_obj *target, float position);
-	//Manipulation
+		
+	void gotoStep(AxisController_obj *target, int32_t step);		//move one motor to step position
+	void gotoStep(AxisController_obj *target, float time_seconds);	//move one motor to time
+	void gotoTimeTEMP(float time_seconds, bool spd = 0);								//moves all motors to a time
+
+	//Program Manipulation
 	void SetLooping(bool enable);
 	bool ScaleMove(float positionScale, float timeScale); //scales time
 	bool ReverseMove(); //Starts at Finish. Finishes at Start.
@@ -94,9 +102,6 @@ class MainController_obj {
 	void RunTimelapse();
 	void RunAnimation();
 	
-	void gotoStep(AxisController_obj *target, int32_t step);		//move one motor to step position
-	void gotoStep(AxisController_obj *target, float time_seconds);	//move one motor to time
-	void gotoTime(float time_seconds, bool spd = 0);								//moves all motors to a time
 	
 	float getMoveTime();
 	

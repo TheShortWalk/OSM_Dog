@@ -153,7 +153,7 @@ void MainController_obj::RunTimelapse(){
 		
 		float nextframe_time = frame_delay * frame_current;
 		if (nextframe_time > moveTime) nextframe_time = moveTime;
-		gotoTime(nextframe_time);
+		gotoTimeTEMP(nextframe_time);
 	}
 }
 
@@ -207,7 +207,7 @@ void MainController_obj::gotoStep(AxisController_obj *target, float time_seconds
 	
 }
 
-void MainController_obj::gotoTime(float time_seconds, bool spd){
+void MainController_obj::gotoTimeTEMP(float time_seconds, bool spd){
 	//CalculateAllMoves();
 	//shitty temp program
 	int32_t position[NUM_AXIS];
@@ -219,11 +219,11 @@ void MainController_obj::gotoTime(float time_seconds, bool spd){
 		position[i] = MICROSTEPS * Axis[i].Motion.getStep_AtTime(time_seconds);
 		dir[i] = 0;
 		//set direction
-		IO_pin_struct *pinTarget = &Axis[i].motorPin.directionPin;
-		*pinTarget->_port &= pinTarget->_bit; //clear pin
-		if(position[i] - Axis[i].currentPosition > 0){
+		IO_pin_struct *pin = &Axis[i].motorPin.directionPin;
+		*pin->_port &= ~pin->_bit; //clear pin
+		if(position[i] > Axis[i].currentPosition){
 			dir[i] = 1;
-			*pinTarget->_port |= pinTarget->_bit;//set pin if +direction
+			*pin->_port |= pin->_bit;//set pin if +direction
 		}
 		if(position[i] != Axis[i].currentPosition) enabled |= (1<<i); //enable stepping
 		//set direction
@@ -235,23 +235,26 @@ void MainController_obj::gotoTime(float time_seconds, bool spd){
 		for(uint8_t i = 0; i < NUM_AXIS; i++){
 			//don't step if finished
 			if((enabled & (1<<i))){
-				IO_pin_struct *target = &Axis[i].motorPin.stepPin;
-				*target->_port |= target->_bit; //Step HIGH
+				IO_pin_struct *stepPin = &Axis[i].motorPin.stepPin;
+				*stepPin->_port |= stepPin->_bit; //Step HIGH
 				if(dir[i]) Axis[i].currentPosition++;
 				else Axis[i].currentPosition--;
 				if(Axis[i].currentPosition == position[i]) enabled &= ~(1<<i);  //disable stepping
 			}
 		}
+		_delay_us(1);
 		//at least 1us for step signal
 		for(uint8_t i = 0; i < NUM_AXIS; i++){
-			IO_pin_struct *target = &Axis[i].motorPin.stepPin;
-			*target->_port &= ~target->_bit;
+			IO_pin_struct *stepPin = &Axis[i].motorPin.stepPin;
+			*stepPin->_port &= ~stepPin->_bit;
 		}
 		//motor step delay
 		if(spd) _delay_us(500);
 		else _delay_us(2000);
 	}
 }
+
+//void MainController_obj::goToPosition()
 
 //---------------------ISRs------------------------------------
 /*
