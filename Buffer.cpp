@@ -87,45 +87,6 @@ void Buffer_obj::BufferOne()
 	Load2Buffer(toBuffer);
 }
 
-void Buffer_obj::BufferTransition(){
-		uint32_t toBuffer;
-
-		//linear interpolation of microsteps
-		if (currentMicrostep < MICROSTEPS) {
-			nextMicrostepTime += microstepDuration;
-			toBuffer = nextMicrostepTime;
-			currentMicrostep++;
-		}
-
-		//last step of interpolation is the full step time
-		else if (currentMicrostep == MICROSTEPS) {
-			toBuffer = nextStepTime;
-			currentMicrostep++;
-			previousStepTime = nextStepTime;
-		}
-
-		//next full step
-		else {
-			currentStep++;
-			if (currentStep > targetAxis->totalSteps) {
-				Finished = true; //compare to total steps
-				toBuffer = 0;
-			}
-			else {
-				currentMicrostep = 1;
-				nextStepTime = targetAxis->StepTime(currentStep); //get the absolute step time from the axis object
-				microstepDuration = (nextStepTime - previousStepTime) / MICROSTEPS; // "/ MICROSTEPS" should optimize into ">> 4"
-				nextMicrostepTime = previousStepTime + microstepDuration;
-
-				currentDirection = targetAxis->StepDirection(currentStep);
-
-				toBuffer = nextMicrostepTime;
-				currentMicrostep++; //
-			}
-		}
-		Load2Buffer(toBuffer);
-}
-
 void Buffer_obj::Load2Buffer(uint32_t stepTime)
 {
 	TimerCompare[FillPos] = stepTime & 0xFFFF;

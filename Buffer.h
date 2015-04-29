@@ -47,7 +47,6 @@ uint32_t nextMicrostepTime;
 uint32_t nextStepTime;
 
 void BufferOne();
-void BufferTransition();
 void Load2Buffer(uint32_t stepTime);
 
 };

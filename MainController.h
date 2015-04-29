@@ -81,7 +81,9 @@ class MainController_obj {
 		
 	void gotoStep(AxisController_obj *target, int32_t step);		//move one motor to step position
 	void gotoStep(AxisController_obj *target, float time_seconds);	//move one motor to time
-	void gotoTimeTEMP(float time_seconds, bool spd = 0);								//moves all motors to a time
+	void gotoTimeTEMP(float time_seconds, bool spd = 0);
+	
+	void gotoTest();								//moves all motors to a time
 
 	//Program Manipulation
 	void SetLooping(bool enable);

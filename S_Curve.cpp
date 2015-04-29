@@ -78,7 +78,7 @@ int32_t Segment_obj::getStep(float time_seconds){
 	volatile uint8_t subsegment = GetSubSegment(time_seconds);
 	switch (subsegment){
 		case 1:
-			step = acceleration * square(time_seconds) / 2;
+			step = acceleration / 2.0 * square(time_seconds);
 			break;
 		case 2:
 			step = velocity * (time_seconds - midPoint_A.seconds) + midPoint_A.steps;
@@ -127,6 +127,7 @@ uint8_t Segment_obj::GetSubSegment(uint32_t nextStep)
 {
   if (nextStep <= midPoint_A.steps) return 1; //if less than or equal to Steps_A : (first velocity line)
   else if (nextStep > midPoint_A.steps + midPoint_B.steps) return 3; //if greater than Steps_A + Steps_B : (third velocity line)
+  else if (nextStep >= deltaSteps) return 4; //beyond the segment
   else return 2; //if between Steps_A and (Steps_A + Steps_B) : (middle velocity line)
 }
 

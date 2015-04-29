@@ -149,7 +149,8 @@ void set_Smooth(int8_t setVal){
 //Moco Functions
 void runTimelapse(){
 	//Moco.frames_timelapse = 10;
-	Moco.RunTimelapse();
+	//Moco.RunTimelapse();
+	Moco.gotoTest();
 }
 
 void gotoFin(){

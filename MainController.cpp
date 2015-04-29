@@ -207,6 +207,13 @@ void MainController_obj::gotoStep(AxisController_obj *target, float time_seconds
 	
 }
 
+void MainController_obj::gotoTest(){
+	CalculateAllMoves();
+	for(uint8_t i = 0; i <= 20; i++){
+		volatile int32_t temp0 = Axis[0].Motion.getStep_AtTime(i * (10.0/20.0));
+	}
+}
+
 void MainController_obj::gotoTimeTEMP(float time_seconds, bool spd){
 	//CalculateAllMoves();
 	//shitty temp program
@@ -264,8 +271,9 @@ void MainController_obj::goToTime(float seconds){
 		int32_t finishPos = Axis[i].Motion.getStep_AtTime(seconds);
 		int32_t steps = finishPos - startPos;
 		
-		//temp method for calculating a time for the move
-		//500steps/second is the safe assumed velocity
+		//temporary method for calculating a time for the move
+		//500 steps/second is estimate far below max velocity
+		//actual peak velocity will be higher, due to acceleration 
 		float moveTime = (float)steps / 500.0;
 		
 		Axis[i].Motion.transitionSegment.start.set(startPos,0);
