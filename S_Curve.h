@@ -35,6 +35,7 @@ class Segment_obj {
     bool Direction;
     uint8_t smoothing;
     uint32_t deltaSteps;
+	float deltaTime;
 
     void offset(int offsetSteps, float offsetSeconds);
     void CalcSegment();
