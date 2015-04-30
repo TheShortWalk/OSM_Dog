@@ -5,6 +5,7 @@ Insert Legal crap here.
 */
 
 #include "Buffer.h"
+#define CALL_MEMBER_FN(object,ptrToMember)  ((object).*(ptrToMember))
 
 /*
 Buffer_obj::Buffer_obj(){
@@ -17,13 +18,13 @@ void Buffer_obj::attachAxis(AxisMotion_obj *LinkedAxis) {
 
 void Buffer_obj::Next()
 {
-	if (!Finished && (FillPos != PullPos) ) BufferOne();
+	if (!Finished && (FillPos != PullPos) ) BufferNext();
 }
 
 void Buffer_obj::Fill()
 {
-	BufferOne(); //initialize buffer with one value
-	while (!Finished && (FillPos != PullPos) ) BufferOne();
+	BufferNext(); //initialize buffer with one value
+	while (!Finished && (FillPos != PullPos) ) BufferNext();
 }
 
 void Buffer_obj::PrintBuffer(){
@@ -45,6 +46,20 @@ void Buffer_obj::Reset()
 	currentStep = 0;
 	currentMicrostep = MICROSTEPS + 1;
 	previousStepTime = 0;
+}
+
+void Buffer_obj::attatchPath(){
+	buffTarget = 0;
+}
+
+void Buffer_obj::attatchTransition(){
+	buffTarget = 1;
+}
+
+//this is soooo shitty
+void Buffer_obj::BufferNext(){
+	if(buffTarget == 0) BufferOne();
+	else if(buffTarget == 1) BufferOneTrans();
 }
 
 void Buffer_obj::BufferOne()
@@ -86,6 +101,47 @@ void Buffer_obj::BufferOne()
 	}
 	Load2Buffer(toBuffer);
 }
+
+void Buffer_obj::BufferOneTrans()
+{
+	uint32_t toBuffer;
+
+	//linear interpolation of microsteps
+	if (currentMicrostep < MICROSTEPS) {
+		nextMicrostepTime += microstepDuration;
+		toBuffer = nextMicrostepTime;
+		currentMicrostep++;
+	}
+
+	//last step of interpolation is the full step time
+	else if (currentMicrostep == MICROSTEPS) {
+		toBuffer = nextStepTime;
+		currentMicrostep++;
+		previousStepTime = nextStepTime;
+	}
+
+	//next full step
+	else {
+		currentStep++;
+		if (currentStep > targetAxis->totalStepsTrans) {
+			Finished = true; //compare to total steps
+			toBuffer = 0;
+		}
+		else {
+			currentMicrostep = 1;
+			nextStepTime = targetAxis->transitionSegment.getStepTimer(currentStep); //get the absolute step time from the axis object
+			microstepDuration = (nextStepTime - previousStepTime) / MICROSTEPS; // "/ MICROSTEPS" should optimize into ">> 4"
+			nextMicrostepTime = previousStepTime + microstepDuration;
+
+			currentDirection = targetAxis->transitionSegment.getDirection();
+
+			toBuffer = nextMicrostepTime;
+			currentMicrostep++; //
+		}
+	}
+	Load2Buffer(toBuffer);
+}
+
 
 void Buffer_obj::Load2Buffer(uint32_t stepTime)
 {

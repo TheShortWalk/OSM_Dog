@@ -265,6 +265,7 @@ void MainController_obj::goToTime(float seconds){
 	//calculate position of each axis at given time
 	//setup tempSegments for each axis
 	//initialize buffer/ISR for each axis
+	CalculateAllMoves();
 	for(uint8_t i = 0; i < NUM_AXIS; i++){
 		//AxisController_obj *axis = Axis[i].Motion
 		int32_t startPos = Axis[i].currentPosition / MICROSTEPS;
@@ -274,13 +275,41 @@ void MainController_obj::goToTime(float seconds){
 		//temporary method for calculating a time for the move
 		//500 steps/second is estimate far below max velocity
 		//actual peak velocity will be higher, due to acceleration 
-		float moveTime = (float)steps / 500.0;
+		float moveTime = (float)steps / 250.0;
 		
 		Axis[i].Motion.transitionSegment.start.set(startPos,0);
 		Axis[i].Motion.transitionSegment.finish.set(finishPos,moveTime);
-		Axis[i].Motion.transitionSegment.smoothing = 5;
+		Axis[i].Motion.transitionSegment.smoothing = 10;
 		Axis[i].Motion.transitionSegment.CalcSegment();
+		Axis[i].Buffer.attatchTransition();
 	}
+	CalculateAllMoves(); //fuck me
+	LoadBuffers();
+	
+	PORTB = (1 << PORTB7);
+  PORTB = (1 << PORTB6);
+
+  cli(); //disable interrupts
+  
+  TCCR1A = 0;// set entire TCCR1A register to 0
+  TCCR1B = 0;// same with B
+  TCCR1B |= (1 << CS11); //set prescale to 8
+
+  TIMSK1 = 0;
+
+  OCR1A = Axis[0].Buffer.TimerCompare[0]; //set the first compare value
+  OCR1B = Axis[1].Buffer.TimerCompare[0];
+
+  OverflowCounter = 0xFFFF; //set overflows to overflow
+  handle_overflow_interrupt(); //run once to enable first steps
+  TCNT1 = 0; //set timer1 to zero
+  TIMSK1 |= (1 << TOIE1); //enable overflow interrupt for Timer1
+
+  sei(); //enable interrupts
+    
+  while (!Axis[0].Buffer.Finished && !Axis[1].Buffer.Finished) {
+    Buffer();
+  }
 }
 
 void MainController_obj::goToPosition(AxisController_obj *axis, float position){
@@ -290,7 +319,7 @@ void MainController_obj::goToPosition(AxisController_obj *axis, float position){
 
 
 //---------------------ISRs------------------------------------
-/*
+
 inline void handle_overflow_interrupt() {
   //PORTE |= 0b01000000; //twiddle on
   //increase overflow counter
@@ -310,27 +339,33 @@ inline void handle_overflow_interrupt() {
 
 inline void handle_timer_interrupt(uint8_t targetAxis, volatile uint8_t *TIMSKn, volatile uint16_t *OCRnx, uint8_t OCIEnx)
 {
-  Buffer_obj *activeBuffer = &(ControllerPointer->Axis[targetAxis].Buffer); //buffer pointer
-  stepper_DriverPins *activeMotor = &(ControllerPointer->Axis[targetAxis].motorPin); //motor port pointer
-
-  *activeMotor->stepPin._port |= activeMotor->stepPin._bit; //turn step port on. must stay on for about 1us
+	Buffer_obj *activeBuffer = &(ControllerPointer->Axis[targetAxis].Buffer); //buffer pointer
+	stepper_DriverPins *activeMotor = &(ControllerPointer->Axis[targetAxis].motorPin); //motor port pointer
+	
+	//set direction pin, and increment current position
+	*activeMotor->directionPin._port &= ~activeMotor->directionPin._bit;
+	if(activeBuffer->Direction[activeBuffer->PullPos]){
+		*activeMotor->directionPin._port |= activeMotor->directionPin._bit;
+		ControllerPointer->Axis[targetAxis].currentPosition++;
+	}
+	else ControllerPointer->Axis[targetAxis].currentPosition--;
+	
+	//step pin high, hold for at least 1us
+	*activeMotor->stepPin._port |= activeMotor->stepPin._bit; //turn step port on. must stay on for about 1us
   
-  //Increment Buffer position
-  activeBuffer->PullPos++;
-  if (activeBuffer->PullPos == BUFFER_SIZE) activeBuffer->PullPos = 0;
-
-  //*direction_port[axisNumber] &= //clear direction
-  //*direction_port[axisNumber] |= //set direction
-
-  if (activeBuffer->OverflowCompare[activeBuffer->PullPos] != OverflowCounter) { //if next step isn't in this timer cycle
-    *TIMSKn &= ~(1 << OCIEnx); //Disable compare ISR for the remainder of this timer cycle
-  }
+	//Increment Buffer position
+	activeBuffer->PullPos++;
+	if (activeBuffer->PullPos == BUFFER_SIZE) activeBuffer->PullPos = 0;
+	
+	if (activeBuffer->OverflowCompare[activeBuffer->PullPos] != OverflowCounter) { //if next step isn't in this timer cycle
+	*TIMSKn &= ~(1 << OCIEnx); //Disable compare ISR for the remainder of this timer cycle
+	}
   
-  *OCRnx = activeBuffer->TimerCompare[activeBuffer->PullPos]; //load next timer value, doesn't matter if it's in a future cycle
+	*OCRnx = activeBuffer->TimerCompare[activeBuffer->PullPos]; //load next timer value, doesn't matter if it's in a future cycle
   
-  //ControllerPointer->Axis[targetAxis].currentPosition
+	//ControllerPointer->Axis[targetAxis].currentPosition
 
-  *activeMotor->stepPin._port &= ~activeMotor->stepPin._bit; //turn step pin off
+	*activeMotor->stepPin._port &= ~activeMotor->stepPin._bit; //turn step pin off
 }
 
 //Overflow
@@ -346,7 +381,7 @@ ISR(TIMER1_COMPA_vect) {
 ISR(TIMER1_COMPB_vect) {
   handle_timer_interrupt(1, &TIMSK1, &OCR1B, OCIE1B);
 }
-*/
+
 
 /*
 ISR(TIMER1_COMPC_vect){

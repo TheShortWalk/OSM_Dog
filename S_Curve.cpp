@@ -90,13 +90,13 @@ which when integrated creates a trapezoidal velocity curve: v = a*t
 which when, once again, integrated creates the s-curve: p = a/2 * t^2 + v0*t + p0
 
 (position)
-|              __
+|               __
 |          /
 |        / 
 |      / 
 |    /
 |__ __________________(time)
-this is a really bad graph
+this is a really shitty graph
 
 the final equation is:
 	p = a/2 * t^2 + v0*t + p0
@@ -164,6 +164,10 @@ int32_t Segment_obj::getStep(float time_seconds){
 			break;
 	}
 	return step;
+}
+
+bool Segment_obj::getDirection(){
+	return Direction;
 }
 
 void Segment_obj::PrintSegment() {

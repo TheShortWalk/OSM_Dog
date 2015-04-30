@@ -32,18 +32,20 @@ class Segment_obj {
     Point_obj start, finish, midPoint_A, midPoint_B;
     float acceleration, velocity;
     int32_t accelFactor_1, accelFactor_2, velFactor;
-    bool Direction;
+    
     uint8_t smoothing;
     uint32_t deltaSteps;
 	float deltaTime;
-
+	
     void offset(int offsetSteps, float offsetSeconds);
     void CalcSegment();
     uint32_t getStepTimer(uint32_t Step);
 	int32_t getStep(float time_seconds);
+	bool getDirection();
     void PrintSegment();
 
   private:
+	bool Direction;
     void PreCalc(); //Computes S-Curve for runtime
     uint8_t GetSubSegment(uint32_t nextStep);
 	uint8_t GetSubSegment(float time_seconds);

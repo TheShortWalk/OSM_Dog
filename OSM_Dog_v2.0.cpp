@@ -36,7 +36,7 @@ int main(void)
 
 	Moco.Axis[0].Motion.AddSegment(0);
 	Moco.Axis[0].Motion.Segment[0].start.set(0, 0);
-	Moco.Axis[0].Motion.Segment[0].finish.set(100, 10);
+	Moco.Axis[0].Motion.Segment[0].finish.set(200, 10);
 	Moco.Axis[0].Motion.Segment[0].smoothing = 10;
 
 	Moco.Axis[1].Motion.AddSegment(0);

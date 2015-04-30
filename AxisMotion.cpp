@@ -44,7 +44,13 @@ uint32_t AxisMotion_obj::StepTime(uint32_t StepNumber) {
 }
 
 bool AxisMotion_obj::StepDirection(uint32_t StepNumber) {
-	return 0;
+	uint8_t seg = getSegment(StepNumber);
+	return Segment[seg].getDirection();
+}
+
+bool AxisMotion_obj::StepDirection(float time_seconds){
+	uint8_t seg = getSegment(time_seconds);
+	return Segment[seg].getDirection();
 }
 
 void AxisMotion_obj::CalculateMove() {
@@ -80,6 +86,7 @@ void AxisMotion_obj::CalculateTotals(){
 	}
 	totalSteps = total;
 	totalSeconds = Segment[totalSegments - 1].finish.seconds;
+	totalStepsTrans = abs(transitionSegment.finish.steps - transitionSegment.start.steps);
 }
 
 uint8_t AxisMotion_obj::getSegment(uint32_t StepNumber){

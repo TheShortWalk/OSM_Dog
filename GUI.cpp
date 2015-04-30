@@ -150,7 +150,7 @@ void set_Smooth(int8_t setVal){
 void runTimelapse(){
 	//Moco.frames_timelapse = 10;
 	//Moco.RunTimelapse();
-	Moco.gotoTest();
+	Moco.goToTime(testFloat);
 }
 
 void gotoFin(){
