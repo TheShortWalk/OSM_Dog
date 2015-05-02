@@ -69,11 +69,10 @@ void AxisMotion_obj::PrintMove() {
 
 int32_t AxisMotion_obj::getStep_AtTime(float time_seconds){
 	//return step position at given time
-	volatile uint8_t seg = getSegment(time_seconds);
-	volatile float startTime = Segment[seg].start.seconds;
-	volatile float relativeTime = time_seconds - startTime;
-	volatile int32_t tempreturn = Segment[seg].getStep(relativeTime);
-	return tempreturn;
+	uint8_t seg = getSegment(time_seconds);
+	float startTime = Segment[seg].start.seconds;
+	float relativeTime = time_seconds - startTime;
+	return Segment[seg].getStep(relativeTime);
 }
 
 //-----PRIVATE FUNCTIONS----------

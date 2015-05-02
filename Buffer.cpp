@@ -23,9 +23,11 @@ void Buffer_obj::Next()
 
 void Buffer_obj::Fill()
 {
-	BufferNext(); //initialize buffer with one value
-	uint8_t nextFillPos = (FillPos + 1) & (BUFFER_SIZE - 1); //ring buffer
-	while (!Finished && (nextFillPos != PullPos) ) BufferNext();
+	uint8_t nextFillPos;
+	do{
+		 BufferNext();
+		 nextFillPos = (FillPos + 1) & (BUFFER_SIZE - 1); //ring buffer
+	} while (!Finished && (nextFillPos != PullPos) );
 }
 
 void Buffer_obj::PrintBuffer(){
@@ -126,7 +128,8 @@ void Buffer_obj::BufferOneTrans()
 		currentStep++;
 		if (currentStep > targetAxis->totalStepsTrans) {
 			Finished = true; //compare to total steps
-			toBuffer = 0;
+			return;
+			//toBuffer = 0;
 		}
 		else {
 			currentMicrostep = 1;

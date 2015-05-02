@@ -45,8 +45,7 @@ inline void handle_overflow_interrupt();
 inline void handle_timer_interrupt(uint8_t targetAxis, volatile uint8_t *TIMSKn, volatile uint16_t *OCRnx, uint8_t OCIEnx);
 
 class MainController_obj {
-	public:
-	
+public:	
 	//static uint8_t NumAxis;
 
 	MainController_obj();
@@ -57,7 +56,7 @@ class MainController_obj {
 		AxisController_obj(&PORTB, 6, &PORTC, 6) //step-10 dir-5
 	 };
 	 
-	 uint8_t moveFinished;
+	 uint8_t moveRunning;
 	
 	void SetModeType(ModeType modeSelect);
 	bool CheckSpeeds();
@@ -109,8 +108,10 @@ class MainController_obj {
 	
 	float getMoveTime();
 	
-//private:
 	uint16_t frames_timelapse; //number of pictures
+	
+private:
+	void setupISRs();
 
 };
 

@@ -166,10 +166,13 @@ void MainController_obj::CalculateAllMoves() {
 }
 
 void MainController_obj::LoadBuffers() {
-  for (int i = 0; i < NUM_AXIS; i++) {
-    Axis[i].Buffer.Reset();
-    Axis[i].Buffer.Fill();
-  }
+	for (int i = 0; i < NUM_AXIS; i++) {
+		if(Axis[i].Buffer.Enabled){
+			Axis[i].Buffer.Reset();
+			Axis[i].Buffer.Fill();
+		}
+		else Axis[i].Buffer.Finished = true;
+	}
 }
 
 void MainController_obj::Buffer() {
@@ -266,51 +269,43 @@ void MainController_obj::goToTime(float seconds){
 	//setup tempSegments for each axis
 	//initialize buffer/ISR for each axis
 	CalculateAllMoves(); //calculates data for main path
+	moveRunning = 0;
 	for(uint8_t i = 0; i < NUM_AXIS; i++){
 		//AxisController_obj *axis = Axis[i].Motion
 		int32_t startPos = Axis[i].currentPosition / MICROSTEPS;
 		int32_t finishPos = Axis[i].Motion.getStep_AtTime(seconds);
 		int32_t steps = finishPos - startPos;
 		
-		//temporary method for calculating a time for the move
-		//500 steps/second is estimate far below max velocity
-		//actual peak velocity will be higher, due to acceleration 
-		//float moveTime = abs(steps) / 250.0; //velocity based
-		float moveTime = 2.0 * sqrt(abs(steps) / 1000.0); //accel based, a = 1000step/sec^2
+		//method for calculating a time for the move
+		//acceleration based
+		//float moveTime = 2.0 * sqrt(abs(steps) / 1000.0); //accel based, a = 1000step/sec^2
+		float moveTime = 2.0 * abs(steps) / 500.0;
+		if(moveTime < 0.5) moveTime = 0.5;
 		
 		Axis[i].Motion.transitionSegment.start.set(startPos,0);
 		Axis[i].Motion.transitionSegment.finish.set(finishPos,moveTime);
 		Axis[i].Motion.transitionSegment.smoothing = 10;
 		Axis[i].Motion.transitionSegment.CalcSegment();
 		Axis[i].Buffer.attatchTransition();
+		
+		if(steps != 0){
+			Axis[i].Running = true;
+			Axis[i].Buffer.Enabled = true;
+			moveRunning |= (1 << i);
+		}
+		else{
+			Axis[i].Running = false;
+			Axis[i].Buffer.Enabled = false;
+		}
 	}
 	CalculateAllMoves(); //calculate again for data in transition segment
 	LoadBuffers();
 	
-	PORTB = (1 << PORTB7);
-  PORTB = (1 << PORTB6);
-
-  cli(); //disable interrupts
-  
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same with B
-  TCCR1B |= (1 << CS11); //set prescale to 8
-
-  TIMSK1 = 0;
-
-  OCR1A = Axis[0].Buffer.TimerCompare[0]; //set the first compare value
-  OCR1B = Axis[1].Buffer.TimerCompare[0];
-
-  OverflowCounter = 0xFFFF; //set overflows to overflow
-  handle_overflow_interrupt(); //run once to enable first steps
-  TCNT1 = 0; //set timer1 to zero
-  TIMSK1 |= (1 << TOIE1); //enable overflow interrupt for Timer1
-
-  sei(); //enable interrupts
+	setupISRs();
     
-  while (!Axis[0].Buffer.Finished && !Axis[1].Buffer.Finished) {
-    Buffer();
-  }
+	while (moveRunning != 0) {
+		Buffer();
+	}
 }
 
 void MainController_obj::goToPosition(AxisController_obj *axis, float position){
@@ -318,24 +313,49 @@ void MainController_obj::goToPosition(AxisController_obj *axis, float position){
 	//call gotoStep
 }
 
+void MainController_obj::setupISRs(){
+	PORTB = (1 << PORTB7);
+	PORTB = (1 << PORTB6);
+
+	cli(); //disable interrupts
+	
+	TCCR1A = 0;// set entire TCCR1A register to 0
+	TCCR1B = 0;// same with B
+	TCCR1B |= (1 << CS11); //set prescale to 8
+
+	TIMSK1 = 0;
+
+	OCR1A = Axis[0].Buffer.TimerCompare[0]; //set the first compare value
+	OCR1B = Axis[1].Buffer.TimerCompare[0];
+
+	OverflowCounter = 0xFFFF; //set overflows to overflow
+	handle_overflow_interrupt(); //run once to enable first steps
+	TCNT1 = 0; //set timer1 to zero
+	TIMSK1 |= (1 << TOIE1); //enable overflow interrupt for Timer1
+
+	sei(); //enable interrupts
+}
+
 
 //---------------------ISRs------------------------------------
 
 inline void handle_overflow_interrupt() {
-  //PORTE |= 0b01000000; //twiddle on
-  //increase overflow counter
-  //each motor: check to see if the overflow of the next step is equal to current overflow
+	//PORTE |= 0b01000000; //twiddle on
+	//increase overflow counter
+	//each motor: check to see if the overflow of the next step is equal to current overflow
 
-  OverflowCounter++;
+	OverflowCounter++;
+	AxisController_obj *axis;
+	axis = &ControllerPointer->Axis[0];
+	if( (axis->Running) && (axis->Buffer.OverflowCompare[axis->Buffer.PullPos] == OverflowCounter) ) TIMSK1 |= (1 << OCIE1A); // enable match 1A interrupt
+	axis = &ControllerPointer->Axis[1];
+	if( (axis->Running) && (axis->Buffer.OverflowCompare[axis->Buffer.PullPos] == OverflowCounter) ) TIMSK1 |= (1 << OCIE1B); // enable match 1B interrupt
+	//if(Axis[2].Buffer.OverflowCompare[Axis[2].Buffer.PullPos] == OverflowCounter) TIMSK1 |= (1 << OCIE1C);  // enable match 1C interrupt
+	//if(Axis[3].Buffer.OverflowCompare[Axis[3].Buffer.PullPos] == OverflowCounter) TIMSK3 |= (1 << OCIE3A);  // enable match 3A interrupt
+	//if(Axis[4].Buffer.OverflowCompare[Axis[4].Buffer.PullPos] == OverflowCounter) TIMSK3 |= (1 << OCIE3B);  // enable match 3B interrupt
+	//if(Axis[5].Buffer.OverflowCompare[Axis[5].Buffer.PullPos] == OverflowCounter) TIMSK3 |= (1 << OCIE3C);  // enable match 3C interrupt
 
-  if(ControllerPointer->Axis[0].Buffer.OverflowCompare[ControllerPointer->Axis[0].Buffer.PullPos] == OverflowCounter) TIMSK1 |= (1 << OCIE1A); // enable match 1A interrupt
-  if(ControllerPointer->Axis[1].Buffer.OverflowCompare[ControllerPointer->Axis[1].Buffer.PullPos] == OverflowCounter) TIMSK1 |= (1 << OCIE1B); // enable match 1B interrupt
-  //if(Axis[2].Buffer.OverflowCompare[Axis[2].Buffer.PullPos] == OverflowCounter) TIMSK1 |= (1 << OCIE1C);  // enable match 1C interrupt
-  //if(Axis[3].Buffer.OverflowCompare[Axis[3].Buffer.PullPos] == OverflowCounter) TIMSK3 |= (1 << OCIE3A);  // enable match 3A interrupt
-  //if(Axis[4].Buffer.OverflowCompare[Axis[4].Buffer.PullPos] == OverflowCounter) TIMSK3 |= (1 << OCIE3B);  // enable match 3B interrupt
-  //if(Axis[5].Buffer.OverflowCompare[Axis[5].Buffer.PullPos] == OverflowCounter) TIMSK3 |= (1 << OCIE3C);  // enable match 3C interrupt
-
-  //PORTE &= 0b10111111;  //twiddle off
+	//PORTE &= 0b10111111;  //twiddle off
 }
 
 inline void handle_timer_interrupt(uint8_t targetAxis, volatile uint8_t *TIMSKn, volatile uint16_t *OCRnx, uint8_t OCIEnx)
@@ -367,11 +387,19 @@ inline void handle_timer_interrupt(uint8_t targetAxis, volatile uint8_t *TIMSKn,
 	*/
 	if(activeBuffer->PullPos == activeBuffer->FillPos){
 		//disable this axis entirely
+		ControllerPointer->Axis[targetAxis].Running = false;
+		ControllerPointer->moveRunning &= ~(1 << targetAxis); //clear running flag
+		*TIMSKn &= ~(1 << OCIEnx); //Disable compare ISR
 		
+		//check if every axis is no longer running
+		if(!ControllerPointer->moveRunning){
+			//disable overflow interrupt
+			TIMSK1 &= ~(1 << TOIE1); //disable overflow interrupt for Timer1
+		}
 	}
 	
 	if (activeBuffer->OverflowCompare[activeBuffer->PullPos] != OverflowCounter) { //if next step isn't in this timer cycle
-	*TIMSKn &= ~(1 << OCIEnx); //Disable compare ISR for the remainder of this timer cycle
+		*TIMSKn &= ~(1 << OCIEnx); //Disable compare ISR for the remainder of this timer cycle
 	}
   
 	*OCRnx = activeBuffer->TimerCompare[activeBuffer->PullPos]; //load next timer value, doesn't matter if it's in a future cycle
