@@ -81,7 +81,9 @@ void set_testValue(int8_t setVal){
 }
 
 void set_testFloat(int8_t setVal){
-	testFloat += setVal * 0.1;
+	static int16_t counter = 0;
+	counter += setVal;
+	testFloat = counter * 0.1;
 	if(testFloat > 9999.9) testFloat = 9999.9;
 }
 

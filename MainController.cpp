@@ -265,7 +265,7 @@ void MainController_obj::goToTime(float seconds){
 	//calculate position of each axis at given time
 	//setup tempSegments for each axis
 	//initialize buffer/ISR for each axis
-	CalculateAllMoves();
+	CalculateAllMoves(); //calculates data for main path
 	for(uint8_t i = 0; i < NUM_AXIS; i++){
 		//AxisController_obj *axis = Axis[i].Motion
 		int32_t startPos = Axis[i].currentPosition / MICROSTEPS;
@@ -275,7 +275,8 @@ void MainController_obj::goToTime(float seconds){
 		//temporary method for calculating a time for the move
 		//500 steps/second is estimate far below max velocity
 		//actual peak velocity will be higher, due to acceleration 
-		float moveTime = (float)steps / 250.0;
+		//float moveTime = abs(steps) / 250.0; //velocity based
+		float moveTime = 2.0 * sqrt(abs(steps) / 1000.0); //accel based, a = 1000step/sec^2
 		
 		Axis[i].Motion.transitionSegment.start.set(startPos,0);
 		Axis[i].Motion.transitionSegment.finish.set(finishPos,moveTime);
@@ -283,7 +284,7 @@ void MainController_obj::goToTime(float seconds){
 		Axis[i].Motion.transitionSegment.CalcSegment();
 		Axis[i].Buffer.attatchTransition();
 	}
-	CalculateAllMoves(); //fuck me
+	CalculateAllMoves(); //calculate again for data in transition segment
 	LoadBuffers();
 	
 	PORTB = (1 << PORTB7);
@@ -339,23 +340,35 @@ inline void handle_overflow_interrupt() {
 
 inline void handle_timer_interrupt(uint8_t targetAxis, volatile uint8_t *TIMSKn, volatile uint16_t *OCRnx, uint8_t OCIEnx)
 {
-	Buffer_obj *activeBuffer = &(ControllerPointer->Axis[targetAxis].Buffer); //buffer pointer
-	stepper_DriverPins *activeMotor = &(ControllerPointer->Axis[targetAxis].motorPin); //motor port pointer
+	Buffer_obj *activeBuffer = &ControllerPointer->Axis[targetAxis].Buffer; //buffer pointer
+	stepper_DriverPins *activeMotor = &ControllerPointer->Axis[targetAxis].motorPin; //motor port pointer
 	
 	//set direction pin, and increment current position
-	*activeMotor->directionPin._port &= ~activeMotor->directionPin._bit;
 	if(activeBuffer->Direction[activeBuffer->PullPos]){
 		*activeMotor->directionPin._port |= activeMotor->directionPin._bit;
 		ControllerPointer->Axis[targetAxis].currentPosition++;
 	}
-	else ControllerPointer->Axis[targetAxis].currentPosition--;
+	else{
+		*activeMotor->directionPin._port &= ~activeMotor->directionPin._bit;
+		ControllerPointer->Axis[targetAxis].currentPosition--;
+	}
 	
 	//step pin high, hold for at least 1us
 	*activeMotor->stepPin._port |= activeMotor->stepPin._bit; //turn step port on. must stay on for about 1us
   
 	//Increment Buffer position
-	activeBuffer->PullPos++;
-	if (activeBuffer->PullPos == BUFFER_SIZE) activeBuffer->PullPos = 0;
+	activeBuffer->PullPos = (activeBuffer->PullPos + 1) & (BUFFER_SIZE - 1); //ring buffer, by removing unused bits
+	//if (activeBuffer->PullPos == BUFFER_SIZE) activeBuffer->PullPos = 0;
+	
+	/*
+	Check if the buffer has eaten it tail, meaning the ISR is trying to pull from
+	where the buffer is trying to fill.This signifies the end of the move, 
+	since the buffer stopped filling, OR the move was too fast for the CPU
+	*/
+	if(activeBuffer->PullPos == activeBuffer->FillPos){
+		//disable this axis entirely
+		
+	}
 	
 	if (activeBuffer->OverflowCompare[activeBuffer->PullPos] != OverflowCounter) { //if next step isn't in this timer cycle
 	*TIMSKn &= ~(1 << OCIEnx); //Disable compare ISR for the remainder of this timer cycle

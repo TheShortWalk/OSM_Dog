@@ -24,7 +24,8 @@ void Buffer_obj::Next()
 void Buffer_obj::Fill()
 {
 	BufferNext(); //initialize buffer with one value
-	while (!Finished && (FillPos != PullPos) ) BufferNext();
+	uint8_t nextFillPos = (FillPos + 1) & (BUFFER_SIZE - 1); //ring buffer
+	while (!Finished && (nextFillPos != PullPos) ) BufferNext();
 }
 
 void Buffer_obj::PrintBuffer(){
@@ -149,6 +150,6 @@ void Buffer_obj::Load2Buffer(uint32_t stepTime)
 	OverflowCompare[FillPos] = stepTime >> 16;
 	Direction[FillPos] = currentDirection;
 
-	FillPos++;
-	if (FillPos >= BUFFER_SIZE) FillPos = 0;
+	FillPos = (FillPos + 1) & (BUFFER_SIZE - 1); //ring buffer
+	//if (FillPos >= BUFFER_SIZE) FillPos = 0;
 }

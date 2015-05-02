@@ -33,7 +33,8 @@ class AxisController_obj {
 	
 	//private:
 	stepper_DriverPins motorPin;
-	int32_t currentPosition;
+	volatile int32_t currentPosition;
+	volatile bool moveFinished;
 };
 
 #endif

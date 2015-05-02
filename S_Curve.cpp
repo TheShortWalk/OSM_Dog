@@ -177,26 +177,27 @@ void Segment_obj::PrintSegment() {
 //Calculates all of the S-curve data 
 void Segment_obj::PreCalc()
 {
-  midPoint_A.steps = (abs(finish.steps - start.steps) * smoothing) / 20; //Steps_A = total_steps * smoothing / 20
-  midPoint_B.steps = abs(finish.steps - start.steps) - 2 * midPoint_A.steps; //Steps_B = total_steps - 2 * Steps_A
+	deltaSteps = abs(finish.steps - start.steps);
+	deltaTime = finish.seconds - start.seconds;
+	
+	midPoint_A.steps = (abs(finish.steps - start.steps) * smoothing) / 20; //Steps_A = total_steps * smoothing / 20
+	midPoint_B.steps = abs(finish.steps - start.steps) - 2 * midPoint_A.steps; //Steps_B = total_steps - 2 * Steps_A
 
-  acceleration = (float)square(4 * midPoint_A.steps + midPoint_B.steps) / (float)(2 * midPoint_A.steps * square(finish.seconds - start.seconds)); //a = (4*Steps_A + Steps_B)^2/(2*Steps_A * (Total_time)^2)
+	acceleration = (float)square(4 * midPoint_A.steps + midPoint_B.steps) / (float)(2 * midPoint_A.steps * square(finish.seconds - start.seconds)); //a = (4*Steps_A + Steps_B)^2/(2*Steps_A * (Total_time)^2)
 
-  midPoint_A.seconds = sqrt(2 * midPoint_A.steps / acceleration);//t_A = sqrt(2*(p-p0)/a)------ t_A = time at t_A step
-  midPoint_B.seconds = (finish.seconds - start.seconds) - 2.0 * midPoint_A.seconds; //t_B = Total_time - 2*t_A
+	midPoint_A.seconds = sqrt(2 * midPoint_A.steps / acceleration);//t_A = sqrt(2*(p-p0)/a)------ t_A = time at t_A step
+	midPoint_B.seconds = (finish.seconds - start.seconds) - 2.0 * midPoint_A.seconds; //t_B = Total_time - 2*t_A
 
-  velocity = (acceleration * midPoint_A.seconds); //v = a * t_A
+	velocity = (acceleration * midPoint_A.seconds); //v = a * t_A
 
-  accelFactor_1 = sqrt(2.0/acceleration)*2000000;//(sqrt(1.0 / acceleration) * 15625.0);
-  accelFactor_2 = (sqrt(2.0 / acceleration) * 15625.0);
-  velFactor = 2000000.0 / velocity;
+	accelFactor_1 = sqrt(2.0/acceleration)*2000000;//(sqrt(1.0 / acceleration) * 15625.0);
+	accelFactor_2 = (sqrt(2.0 / acceleration) * 15625.0);
+	velFactor = 2000000.0 / velocity;
 
-  deltaSteps = abs(finish.steps - start.steps);
-  deltaTime = finish.seconds - start.seconds;
-
-  //direction of step
-  if (finish.steps - start.steps > 0) Direction = 1;
-  else Direction = 0;
+	//direction of step
+	if (finish.steps - start.steps > 0) Direction = 1;
+	else Direction = 0;
+	
 }
 
 uint8_t Segment_obj::GetSubSegment(uint32_t nextStep)

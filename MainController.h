@@ -56,6 +56,8 @@ class MainController_obj {
 		AxisController_obj(&PORTB, 7, &PORTD, 7), //step-11 dir-6
 		AxisController_obj(&PORTB, 6, &PORTC, 6) //step-10 dir-5
 	 };
+	 
+	 uint8_t moveFinished;
 	
 	void SetModeType(ModeType modeSelect);
 	bool CheckSpeeds();
