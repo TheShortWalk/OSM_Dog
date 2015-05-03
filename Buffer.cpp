@@ -21,6 +21,11 @@ void Buffer_obj::Next()
 	if (!Finished && (FillPos != PullPos) ) BufferNext();
 }
 
+
+//implement a system to select a fill position, and indicate it's fill status
+//currently the fill position has a 1 space gap to the pull position
+//the ISR checks to see if it's pulling from the fill position to halt the move
+//indicating an overrun, or the move is finished and has stopped buffering.
 void Buffer_obj::Fill()
 {
 	uint8_t nextFillPos;
