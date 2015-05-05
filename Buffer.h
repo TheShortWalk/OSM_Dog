@@ -31,7 +31,7 @@ public:
 	uint16_t OverflowCompare[BUFFER_SIZE]; //number of 16bit counter overflows
 	bool Direction[BUFFER_SIZE];
 
-	void Next();
+	bool Next();
 	void Fill();
 	void Reset();
 	
@@ -48,7 +48,8 @@ private:
 	uint8_t currentMicrostep;
 	uint32_t microstepDuration;
 	uint32_t nextMicrostepTime;
-	uint32_t nextStepTime;\
+	uint32_t nextStepTime;
+	volatile bool Full; //indicates the buffer is full
 	
 	uint8_t buffTarget;
 

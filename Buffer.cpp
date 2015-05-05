@@ -16,9 +16,24 @@ void Buffer_obj::attachAxis(AxisMotion_obj *LinkedAxis) {
 	this->targetAxis = LinkedAxis;
 }
 
-void Buffer_obj::Next()
+bool Buffer_obj::Next()
 {
-	if (!Finished && (FillPos != PullPos) ) BufferNext();
+	//if the move has not cycled through the buffer
+	if (!Finished){
+		//ring buffer
+		uint8_t nextFillPos =  (FillPos + 1) & (BUFFER_SIZE - 1);
+		
+		//the buffer is not full
+		if(nextFillPos != PullPos){
+			FillPos = nextFillPos;
+			BufferNext();
+			return true; //successful buffer
+		}
+		
+		//the buffer is full
+		else return false; //unsuccessful buffer
+	}
+	return false; //unsuccessful buffer
 }
 
 
@@ -28,11 +43,16 @@ void Buffer_obj::Next()
 //indicating an overrun, or the move is finished and has stopped buffering.
 void Buffer_obj::Fill()
 {
+	Next();
+	PullPos = 0;
+	while (Next());
+/*
 	uint8_t nextFillPos;
 	do{
-		 BufferNext();
+		 Next();
 		 nextFillPos = (FillPos + 1) & (BUFFER_SIZE - 1); //ring buffer
 	} while (!Finished && (nextFillPos != PullPos) );
+	*/
 }
 
 void Buffer_obj::PrintBuffer(){
@@ -48,8 +68,8 @@ void Buffer_obj::Reset()
 		TimerCompare[i] = 0;
 		Direction[i] = 0;
 	}
-	PullPos = 0;
-	FillPos = 0;
+	PullPos = BUFFER_SIZE - 1;
+	FillPos = BUFFER_SIZE - 1;
 	Finished = false;
 	currentStep = 0;
 	currentMicrostep = MICROSTEPS + 1;
@@ -158,6 +178,7 @@ void Buffer_obj::Load2Buffer(uint32_t stepTime)
 	OverflowCompare[FillPos] = stepTime >> 16;
 	Direction[FillPos] = currentDirection;
 
-	FillPos = (FillPos + 1) & (BUFFER_SIZE - 1); //ring buffer
-	//if (FillPos >= BUFFER_SIZE) FillPos = 0;
+	//uint8_t nextFillPos = (FillPos + 1) & (BUFFER_SIZE - 1);
+	//if(nextFillPos == PullPos) Full = true;
+	//else Full = false;
 }
