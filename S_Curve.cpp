@@ -215,10 +215,10 @@ uint8_t Segment_obj::GetSubSegment(float time_seconds){
 	if(time_seconds <= 0) return 0; 
 	//speeding up
 	else if(time_seconds <= midPoint_A.seconds) return 1;
-	//slowing down
-	else if(time_seconds > (midPoint_A.seconds + midPoint_B.seconds)) return 3;
 	//time after segment
 	else if(time_seconds >= deltaTime) return 4;
+	//slowing down
+	else if(time_seconds > (midPoint_A.seconds + midPoint_B.seconds)) return 3;
 	//constant velocity
 	else return 2;
 }

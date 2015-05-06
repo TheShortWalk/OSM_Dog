@@ -57,6 +57,7 @@ void AxisMotion_obj::CalculateMove() {
 	for (uint8_t i = 0; i < totalSegments; i++) {
 		Segment[i].CalcSegment();
 	}
+	transitionSegment.CalcSegment();
 	CalculateTotals();
 }
 
@@ -107,5 +108,5 @@ uint8_t AxisMotion_obj::getSegment(float time_seconds){
 		}
 	}
 	//end of move
-	return 0;
+	return totalSegments - 1;
 }

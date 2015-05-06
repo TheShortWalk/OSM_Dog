@@ -56,7 +56,7 @@ public:
 		AxisController_obj(&PORTB, 6, &PORTC, 6) //step-10 dir-5
 	 };
 	 
-	 uint8_t moveRunning;
+	 volatile uint8_t moveRunning;
 	
 	void SetModeType(ModeType modeSelect);
 	bool CheckSpeeds();
@@ -84,7 +84,10 @@ public:
 	void gotoStep(AxisController_obj *target, float time_seconds);	//move one motor to time
 	void gotoTimeTEMP(float time_seconds, bool spd = 0);
 	
-	void gotoTest();								//moves all motors to a time
+	void gotoTest(); //moves all motors to a time
+	
+	void eatBuffer();
+	
 
 	//Program Manipulation
 	void SetLooping(bool enable);
