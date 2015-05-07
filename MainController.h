@@ -78,7 +78,8 @@ public:
 	void goToTime(float seconds); //drive all motors to time
 	void goToPosition(AxisController_obj *axis, float position);
 	void jogToTime(float seconds);
-	void jogToPosition(AxisController_obj *target, float position);
+	void jogToPosition(AxisController_obj *axis, float position);
+	void jogToStep(AxisController_obj *axis, int32_t step);
 		
 	void gotoStep(AxisController_obj *target, int32_t step);		//move one motor to step position
 	void gotoStep(AxisController_obj *target, float time_seconds);	//move one motor to time

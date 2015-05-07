@@ -316,6 +316,17 @@ void MainController_obj::goToTime(float seconds){
 	}
 }
 
+void MainController_obj::jogToStep(AxisController_obj *axis, int32_t step){
+	//attach jog to buffer
+	//calculate the distance between current and desired step
+	//
+}
+
+void MainController_obj::jogToPosition(AxisController_obj *axis, float position){
+	//convert position to steps
+	//
+}
+
 //A fake ISR to consume buffer values while debugging
 void MainController_obj::eatBuffer(){
 	for(uint8_t i = 0; i < NUM_AXIS; i++){
@@ -331,8 +342,8 @@ void MainController_obj::goToPosition(AxisController_obj *axis, float position){
 }
 
 void MainController_obj::setupISRs(){
-	PORTB = (1 << PORTB7);
-	PORTB = (1 << PORTB6);
+	PORTB &= ~(1 << PORTB7);
+	PORTB &= ~(1 << PORTB6);
 
 	cli(); //disable interrupts
 	

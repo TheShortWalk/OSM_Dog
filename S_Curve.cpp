@@ -46,23 +46,27 @@ void Segment_obj::CalcSegment(){
 uint32_t Segment_obj::getStepTimer(uint32_t Step)
 {
   
-  uint32_t ticks;
+	uint32_t ticks;
 
-  switch (GetSubSegment(Step)) {
-  case 1:
-    //cli();
-    //PORTD |= (1<<7); //twiddle on
-    ticks = sqrt(Step) * accelFactor_1;
-    //ticks = FastMath(Step);//t = sqrt(2*(p-p0)/a);
-    //PORTD &= ~(1<<7);  //twiddle off
-    break;
-  case 2:
-    ticks = (Step - midPoint_A.steps) * velFactor + midPoint_A.seconds * 2000000.0;// t = ((p-p0)/v0)+t_A
-    break;
-  case 3:
-    ticks = (finish.seconds - start.seconds)*2000000 - sqrt(midPoint_A.steps * 2 + midPoint_B.steps - Step) * accelFactor_1; //Path_total_time - sqrt(2*(2*Steps_A + Steps_B - Steps)/a)
-    //ticks = (midPoint_A.seconds * 2 + midPoint_B.seconds)*2000000 - FastMath(midPoint_A.steps * 2 + midPoint_B.steps - Step); //Path_total_time - sqrt(2*(2*Steps_A + Steps_B - Steps)/a)
-    break;
+	switch (GetSubSegment(Step)) {
+		case 1:
+		ticks = sqrt(Step) * accelFactor_1;
+		//ticks = FastMath(Step);//t = sqrt(2*(p-p0)/a);
+		break;
+		
+		case 2:
+		ticks = (Step - midPoint_A.steps) * velFactor + midPoint_A.seconds * 2000000.0;// t = ((p-p0)/v0)+t_A
+		break;
+		
+		case 3:
+		ticks = (deltaTime)*2000000 - sqrt(midPoint_A.steps * 2 + midPoint_B.steps - Step) * accelFactor_1; //Path_total_time - sqrt(2*(2*Steps_A + Steps_B - Steps)/a)
+		//ticks = (midPoint_A.seconds * 2 + midPoint_B.seconds)*2000000 - FastMath(midPoint_A.steps * 2 + midPoint_B.steps - Step); //Path_total_time - sqrt(2*(2*Steps_A + Steps_B - Steps)/a)
+		break;
+		
+		case 4:
+		ticks = deltaTime * 2000000;
+		break;
+	
   }
   return ticks + (uint32_t)(start.seconds * 2000000.0);
 }
@@ -203,8 +207,8 @@ void Segment_obj::PreCalc()
 uint8_t Segment_obj::GetSubSegment(uint32_t nextStep)
 {
 	if (nextStep <= midPoint_A.steps) return 1; //if less than or equal to Steps_A : (first velocity line)
-	else if (nextStep > midPoint_A.steps + midPoint_B.steps) return 3; //if greater than Steps_A + Steps_B : (third velocity line)
 	else if (nextStep >= deltaSteps) return 4; //beyond the segment
+	else if (nextStep > midPoint_A.steps + midPoint_B.steps) return 3; //if greater than Steps_A + Steps_B : (third velocity line)
 	else return 2; //if between Steps_A and (Steps_A + Steps_B) : (middle velocity line)
 }
 

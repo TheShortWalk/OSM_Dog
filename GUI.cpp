@@ -68,7 +68,8 @@ char *get_Mode(){
 }
 
 char *get_testValue(){
-	return to_char(testValue);
+	//return to_char(testValue);
+	return to_char((int16_t)(Moco.Axis[1].currentPosition / MICROSTEPS));
 };
 
 char *get_testFloat(){
