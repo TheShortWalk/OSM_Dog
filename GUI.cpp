@@ -151,19 +151,25 @@ void set_Smooth(int8_t setVal){
 
 //Moco Functions
 void runTimelapse(){
+	Moco.gotoTime(0.0);
 	//Moco.frames_timelapse = 10;
-	//Moco.RunTimelapse();
-	Moco.goToTime(testFloat);
+	Moco.RunTimelapse();
+	//Moco.gotoTime(testFloat);
+}
+
+void runVideo(){
+	Moco.gotoTime(0.0);
+	Moco.RunMove();
 }
 
 void gotoFin(){
 	Moco.CalculateAllMoves();
-	Moco.gotoTimeTEMP(Moco.Axis[selectedAxis].Motion.Segment[0].finish.seconds, 1);
+	Moco.gotoTime(Moco.Axis[selectedAxis].Motion.Segment[0].finish.seconds);
 }
 
 void gotoStart(){
 	Moco.CalculateAllMoves();
-	Moco.gotoTimeTEMP(Moco.Axis[selectedAxis].Motion.Segment[0].start.seconds, 1);
+	Moco.gotoTime(0);
 }
 
 
@@ -173,8 +179,8 @@ void gotoStart(){
 MenuItem_obj Items_MainMenu[] = {
 	MenuItem_obj(get_Mode, set_Mode),
 	MenuItem_obj("Pics:", get_timelapseFrames, set_timelapseFrames),
-	MenuItem_obj("Run", runTimelapse),
-	MenuItem_obj("Return"),
+	MenuItem_obj("Run", runVideo),
+	MenuItem_obj("Reset", gotoStart),
 	MenuItem_obj("Path", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
 	MenuItem_obj("About", ABOUT),

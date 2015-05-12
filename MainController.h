@@ -75,7 +75,7 @@ public:
 	void HomeMove(); //moves motor to start (moves motor)
 	
 	//Motor Controls
-	void goToTime(float seconds); //drive all motors to time
+	void gotoTime(float seconds); //drive all motors to time
 	void goToPosition(AxisController_obj *axis, float position);
 	void jogToTime(float seconds);
 	void jogToPosition(AxisController_obj *axis, float position);

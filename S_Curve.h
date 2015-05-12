@@ -31,10 +31,9 @@ class Segment_obj {
   public:
     Point_obj start, finish, midPoint_A, midPoint_B;
     float acceleration, velocity;
-    int32_t accelFactor_1, accelFactor_2, velFactor;
+    uint32_t accelFactor_1, accelFactor_2, velFactor, start_ticks, deltaSteps, midPoint_A_ticks, deltaTime_ticks;
     
     uint8_t smoothing;
-    uint32_t deltaSteps;
 	float deltaTime;
 	
     void offset(int offsetSteps, float offsetSeconds);

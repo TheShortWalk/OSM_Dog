@@ -44,12 +44,38 @@ void MainController_obj::RunBuffer()
 void MainController_obj::RunMove()
 {
   CalculateAllMoves();
+  
+  	moveRunning = 0;
+	for(uint8_t i = 0; i < NUM_AXIS; i++){
+		Axis[i].Buffer.attatchPath();
+		
+		if(Axis[i].Motion.totalSteps != 0){
+			Axis[i].Running = true;
+			Axis[i].Buffer.Enabled = true;
+			moveRunning |= (1 << i);
+		}
+		else{
+			Axis[i].Running = false;
+			Axis[i].Buffer.Enabled = false;
+		}
+	}
   //PrintMoves();
   LoadBuffers();
+  
+  if (moveRunning){
+		setupISRs();
+		PORTC |= (1 << PORTC7); //twiddle on
+    
+		while (moveRunning != 0) {
+			Buffer();
+		}
+		PORTC &= ~(1 << PORTC7); //twiddle off
+	}
+  
   //Buffer_obj *activeBuffer = &Axis[0].Buffer;
   //Axis[0].Buffer.TimerCompare[0] = 5000;
   //Axis[1].Buffer.TimerCompare[0] = 5000;
-  
+  /*
   //temporarily set direction
   PORTB = (1 << PORTB7);
   PORTB = (1 << PORTB6);
@@ -86,9 +112,13 @@ void MainController_obj::RunMove()
       PrintNumber++;
       if(PrintNumber >= 50) PrintNumber = 0;
     }
-    */
+    
   }
+  */
+  
   PORTE |= 0b01000000; //twiddle on
+  
+  
 
   //Serial.println("Printing Pull Positions");
   //for(int i = 0; i < 100; i++){
@@ -153,7 +183,7 @@ void MainController_obj::RunTimelapse(){
 		
 		float nextframe_time = frame_delay * frame_current;
 		if (nextframe_time > moveTime) nextframe_time = moveTime;
-		gotoTimeTEMP(nextframe_time);
+		gotoTime(nextframe_time);
 	}
 }
 
@@ -264,7 +294,7 @@ void MainController_obj::gotoTimeTEMP(float time_seconds, bool spd){
 	}
 }
 
-void MainController_obj::goToTime(float seconds){
+void MainController_obj::gotoTime(float seconds){
 	//calculate position of each axis at given time
 	//setup tempSegments for each axis
 	//initialize buffer/ISR for each axis

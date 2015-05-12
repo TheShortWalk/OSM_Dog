@@ -12,6 +12,10 @@ Insert Legal crap here.
 #include <math.h>
 #include "S_Curve.h"
 
+#define PRESCALE 8
+#define CLK	16000000
+#define TIMER_CONVERSION (CLK / PRESCALE)
+
 Point_obj::Point_obj() {
   this->steps = 0;
   this->seconds = 0;
@@ -43,32 +47,37 @@ void Segment_obj::CalcSegment(){
 }
 
 //Calculate the TIME of Step in counter ticks
+//for the love of GOD this function needs to be optimized
+//which probably means discarding those floats
+//2,000,000 is magic number. It's the clockspeed/precale of the timer. fix it
+
 uint32_t Segment_obj::getStepTimer(uint32_t Step)
 {
   
 	uint32_t ticks;
 
 	switch (GetSubSegment(Step)) {
-		case 1:
+		
+		case 1: //speed up
 		ticks = sqrt(Step) * accelFactor_1;
 		//ticks = FastMath(Step);//t = sqrt(2*(p-p0)/a);
 		break;
 		
-		case 2:
-		ticks = (Step - midPoint_A.steps) * velFactor + midPoint_A.seconds * 2000000.0;// t = ((p-p0)/v0)+t_A
+		case 2: //constant velocity
+		ticks = (Step - midPoint_A.steps) * velFactor + midPoint_A_ticks;// t = ((p-p0)/v0)+t_A
 		break;
 		
-		case 3:
-		ticks = (deltaTime)*2000000 - sqrt(midPoint_A.steps * 2 + midPoint_B.steps - Step) * accelFactor_1; //Path_total_time - sqrt(2*(2*Steps_A + Steps_B - Steps)/a)
+		case 3: //slow down
+		ticks = deltaTime_ticks - sqrt(deltaSteps - Step) * accelFactor_1; //Path_total_time - sqrt(2*(2*Steps_A + Steps_B - Steps)/a)
 		//ticks = (midPoint_A.seconds * 2 + midPoint_B.seconds)*2000000 - FastMath(midPoint_A.steps * 2 + midPoint_B.steps - Step); //Path_total_time - sqrt(2*(2*Steps_A + Steps_B - Steps)/a)
 		break;
 		
-		case 4:
-		ticks = deltaTime * 2000000;
+		case 4: //end of move
+		ticks = deltaTime_ticks;
 		break;
 	
   }
-  return ticks + (uint32_t)(start.seconds * 2000000.0);
+  return ticks + start_ticks;
 }
 
 /*
@@ -181,16 +190,19 @@ void Segment_obj::PrintSegment() {
 //Calculates all of the S-curve data 
 void Segment_obj::PreCalc()
 {
+	start_ticks = start.seconds * 2000000.0;
 	deltaSteps = abs(finish.steps - start.steps);
 	deltaTime = finish.seconds - start.seconds;
+	deltaTime_ticks = deltaTime * 2000000.0;
 	
-	midPoint_A.steps = (abs(finish.steps - start.steps) * smoothing) / 20; //Steps_A = total_steps * smoothing / 20
-	midPoint_B.steps = abs(finish.steps - start.steps) - 2 * midPoint_A.steps; //Steps_B = total_steps - 2 * Steps_A
+	midPoint_A.steps = (deltaSteps * smoothing) / 20; //Steps_A = total_steps * smoothing / 20
+	midPoint_B.steps = deltaSteps - (2 * midPoint_A.steps); //Steps_B = total_steps - 2 * Steps_A
 
 	acceleration = (float)square(4 * midPoint_A.steps + midPoint_B.steps) / (float)(2 * midPoint_A.steps * square(finish.seconds - start.seconds)); //a = (4*Steps_A + Steps_B)^2/(2*Steps_A * (Total_time)^2)
 
 	midPoint_A.seconds = sqrt(2 * midPoint_A.steps / acceleration);//t_A = sqrt(2*(p-p0)/a)------ t_A = time at t_A step
 	midPoint_B.seconds = (finish.seconds - start.seconds) - 2.0 * midPoint_A.seconds; //t_B = Total_time - 2*t_A
+	midPoint_A_ticks = midPoint_A.seconds * 2000000.0;
 
 	velocity = (acceleration * midPoint_A.seconds); //v = a * t_A
 
