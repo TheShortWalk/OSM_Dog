@@ -21,8 +21,8 @@ class Point_obj {
     float seconds;
 
     Point_obj();
-    void offset(int offsetSteps, float offsetSeconds);
-    void set(long setSteps, float setSeconds);
+    void offset(int16_t offsetSteps, float offsetSeconds);
+    void set(int32_t setSteps, float setSeconds);
     void PrintPoint();
 };
 
@@ -36,7 +36,7 @@ class Segment_obj {
     uint8_t smoothing;
 	float deltaTime;
 	
-    void offset(int offsetSteps, float offsetSeconds);
+    void offset(int16_t offsetSteps, float offsetSeconds);
     void CalcSegment();
     uint32_t getStepTimer(uint32_t Step);
 	int32_t getStep(float time_seconds);

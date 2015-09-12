@@ -35,7 +35,7 @@ void MainController_obj::RunBuffer()
   CalculateAllMoves();
   //PrintMoves();
 
-  for (int i = 0; i <= Axis[0].Motion.Segment[0].finish.steps; i++) {
+  for (int16_t i = 0; i <= Axis[0].Motion.Segment[0].finish.steps; i++) {
     //Serial.print("Axis1: "), Serial.print(Axis[0].Motion.StepTime(i)), Serial.print(", Axis2: "), Serial.println(Axis[1].Motion.StepTime(i));
     //volatile uint32_t temp = Axis[0].Motion.StepTime(i);
   }
@@ -167,18 +167,16 @@ void MainController_obj::RunTimelapse(){
 	CalculateAllMoves();
 	float moveTime = getMoveTime();
 	float frame_delay = moveTime / (frames_timelapse - 1);
-	int16_t frame_current = 1;
-	while(frame_current <= frames_timelapse){
-		
-		//shutter down
+	int16_t frame_current = 0;
+	while(frame_current < frames_timelapse){
 		frame_current++;
 		Display.Clear();
 		Display.gotoXY(0,0);
 		Display.Write("Pic:"), Display.Write((int16_t)frame_current);
-		PORTF |= (1<<PORTF7);
-		//shutter off
-		
+		//shutter down
+		PORTF |= (1<<PORTF7);		
 		_delay_ms(3000);
+		//shutter off
 		PORTF &= ~(1<<PORTF7);
 		
 		float nextframe_time = frame_delay * frame_current;
@@ -190,13 +188,13 @@ void MainController_obj::RunTimelapse(){
 void MainController_obj::RunAnimation(){}
 
 void MainController_obj::CalculateAllMoves() {
-  for (int i = 0; i < NUM_AXIS; i++) {
+  for (int16_t i = 0; i < NUM_AXIS; i++) {
     Axis[i].Motion.CalculateMove();
   }
 }
 
 void MainController_obj::LoadBuffers() {
-	for (int i = 0; i < NUM_AXIS; i++) {
+	for (int16_t i = 0; i < NUM_AXIS; i++) {
 		if(Axis[i].Buffer.Enabled){
 			Axis[i].Buffer.Reset();
 			Axis[i].Buffer.Fill();
@@ -206,13 +204,13 @@ void MainController_obj::LoadBuffers() {
 }
 
 void MainController_obj::Buffer() {
-  for (int i = 0; i < NUM_AXIS; i++) {
+  for (int16_t i = 0; i < NUM_AXIS; i++) {
     Axis[i].Buffer.Next();
   }
 }
 
 void MainController_obj::PrintMoves() {
-  for (int i = 0; i < NUM_AXIS; i++) {
+  for (int16_t i = 0; i < NUM_AXIS; i++) {
     //Axis[i].Motion.PrintMove();
   }
 }
@@ -304,7 +302,7 @@ void MainController_obj::gotoTime(float seconds){
 		//AxisController_obj *axis = Axis[i].Motion
 		int32_t startPos = Axis[i].currentPosition / MICROSTEPS;
 		int32_t finishPos = Axis[i].Motion.getStep_AtTime(seconds);
-		int32_t steps = finishPos - startPos;
+		volatile int32_t steps = finishPos - startPos;
 		
 		//method for calculating a time for the move
 		//acceleration, or velocity based

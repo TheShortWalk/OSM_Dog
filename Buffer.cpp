@@ -57,14 +57,14 @@ void Buffer_obj::Fill()
 
 void Buffer_obj::PrintBuffer(){
 	//Serial.println("Printing Buffer");
-	for (int i = 0; i < BUFFER_SIZE; i++){
+	for (int16_t i = 0; i < BUFFER_SIZE; i++){
 		//Serial.println(OverflowCompare[i] << 16 + TimerCompare[i]);
 	}
 }
 
 void Buffer_obj::Reset()
 {
-	for (int i = 0; i < BUFFER_SIZE; i++) {
+	for (int16_t i = 0; i < BUFFER_SIZE; i++) {
 		TimerCompare[i] = 0;
 		Direction[i] = 0;
 	}

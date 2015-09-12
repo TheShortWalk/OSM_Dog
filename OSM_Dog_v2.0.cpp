@@ -36,12 +36,12 @@ int main(void)
 
 	Moco.Axis[0].Motion.AddSegment(0);
 	Moco.Axis[0].Motion.Segment[0].start.set(0, 0);
-	Moco.Axis[0].Motion.Segment[0].finish.set(200, 10);
-	Moco.Axis[0].Motion.Segment[0].smoothing = 10;
+	Moco.Axis[0].Motion.Segment[0].finish.set(4000, 10);
+	Moco.Axis[0].Motion.Segment[0].smoothing = 1;
 
 	Moco.Axis[1].Motion.AddSegment(0);
 	Moco.Axis[1].Motion.Segment[0].start.set(0, 0);
-	Moco.Axis[1].Motion.Segment[0].finish.set(2000, 10);
+	Moco.Axis[1].Motion.Segment[0].finish.set(0, 10);
 	Moco.Axis[1].Motion.Segment[0].smoothing = 1;
 	
 	_delay_ms(1000);

@@ -21,12 +21,12 @@ Point_obj::Point_obj() {
   this->seconds = 0;
 }
 
-void Point_obj::offset(int offsetSteps, float offsetSeconds) {
+void Point_obj::offset(int16_t offsetSteps, float offsetSeconds) {
   steps += offsetSteps;
   seconds += offsetSeconds;
 }
 
-void Point_obj::set(long setSteps, float setSeconds) {
+void Point_obj::set(int32_t setSteps, float setSeconds) {
   steps = setSteps;
   seconds = setSeconds;
 }
@@ -37,7 +37,7 @@ void Point_obj::PrintPoint() {
 }
 
 //************************************************************
-void Segment_obj::offset(int offsetSteps, float offsetSeconds) {
+void Segment_obj::offset(int16_t offsetSteps, float offsetSeconds) {
   start.offset(offsetSteps, offsetSeconds);
   finish.offset(offsetSteps, offsetSeconds);
 }
@@ -122,6 +122,7 @@ p0	- initial position
 
 */
 int32_t Segment_obj::getStep(float time_seconds){
+	if(deltaSteps == 0) return finish.steps;
 	int32_t step;
 	float relativeTime;
 	volatile uint8_t subsegment = GetSubSegment(time_seconds);

@@ -179,7 +179,8 @@ void gotoStart(){
 MenuItem_obj Items_MainMenu[] = {
 	MenuItem_obj(get_Mode, set_Mode),
 	MenuItem_obj("Pics:", get_timelapseFrames, set_timelapseFrames),
-	MenuItem_obj("Run", runVideo),
+	MenuItem_obj("Run", runTimelapse),
+	MenuItem_obj("Preview", runVideo),
 	MenuItem_obj("Reset", gotoStart),
 	MenuItem_obj("Path", PROGRAM),
 	MenuItem_obj("Settings", SETTINGS),
