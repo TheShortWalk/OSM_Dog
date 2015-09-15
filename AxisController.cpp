@@ -17,6 +17,6 @@ AxisController_obj::AxisController_obj(volatile uint8_t *stepPort, uint8_t stepB
 	
 }
 
-uint32_t AxisController_obj::getCurrentPosition(){
+int32_t AxisController_obj::getCurrentPosition(){
 	return currentPosition;
 }

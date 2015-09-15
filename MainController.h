@@ -56,7 +56,8 @@ public:
 		AxisController_obj(&PORTB, 6, &PORTC, 6) //step-10 dir-5
 	 };
 	 
-	 volatile uint8_t moveRunning;
+	volatile uint8_t moveRunning;
+	bool liveUpdate;
 	
 	void SetModeType(ModeType modeSelect);
 	bool CheckSpeeds();

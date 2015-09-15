@@ -30,6 +30,7 @@ float testFloat = 0;
 enum mocoModes {TIMELAPSE = 0, VIDEO = 1, ANIMATION = 2, DRAGONFRAME = 3, PC = 4, END_OF_MODES = 5};
 int8_t selectedMode = TIMELAPSE;
 enum AxisNames {DOLLY, PAN, FOCUS, END_OF_AXIS};
+int16_t AxisScale[NUM_AXIS];
 int8_t selectedAxis = DOLLY;
 
 void set_testValue(){
@@ -126,7 +127,7 @@ char *get_Position(){
 }
 void set_Position(int8_t setVal){
 	Point_obj *target = &Moco.Axis[selectedAxis].Motion.Segment[0].finish;
-	target->steps += setVal * 100;
+	target->steps += setVal * AxisScale[selectedAxis];
 }
 
 char *get_Time(){
@@ -411,6 +412,10 @@ GUI_obj::GUI_obj(MenuPage_obj *Pages, uint8_t listLength){
 	this->numberOfMenus = listLength;
 	
 	this->Current_Page = MAIN;
+	
+	AxisScale[DOLLY] = 100;
+	AxisScale[PAN] = 5;
+	
 	};
 	
 	
@@ -486,9 +491,10 @@ void GUI_obj::Handle_Button(Button::ButtonStates state){
 };
 
 void GUI_obj::Handle_Scroll(int8_t scrollChange){
+	
 	HID_Dial.Changed = false;
 	
-	if(itemSelected){
+	if(itemSelected){		
 		scrollTarget(HID_Dial.count);
 	}
 	else{

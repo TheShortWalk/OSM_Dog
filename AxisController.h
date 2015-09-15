@@ -29,7 +29,7 @@ class AxisController_obj {
 	AxisMotion_obj Motion;
 	Buffer_obj Buffer;
 	
-	uint32_t getCurrentPosition();
+	int32_t getCurrentPosition();
 	
 	//private:
 	stepper_DriverPins motorPin;

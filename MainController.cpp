@@ -21,6 +21,7 @@ volatile uint16_t OverflowCounter = 0;
 MainController_obj::MainController_obj()
 {
 	ControllerPointer = this; //store location of Axis objects for ISR
+	liveUpdate = true;
   //this->NUM_AXIS = sizeof(Axis)/sizeof(Axis[0]);
 };
 
@@ -300,8 +301,8 @@ void MainController_obj::gotoTime(float seconds){
 	moveRunning = 0;
 	for(uint8_t i = 0; i < NUM_AXIS; i++){
 		//AxisController_obj *axis = Axis[i].Motion
-		int32_t startPos = Axis[i].currentPosition / MICROSTEPS;
-		int32_t finishPos = Axis[i].Motion.getStep_AtTime(seconds);
+		volatile int32_t startPos = Axis[i].getCurrentPosition() / MICROSTEPS;
+		volatile int32_t finishPos = Axis[i].Motion.getStep_AtTime(seconds);
 		volatile int32_t steps = finishPos - startPos;
 		
 		//method for calculating a time for the move

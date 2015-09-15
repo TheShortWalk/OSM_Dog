@@ -22,13 +22,13 @@ Point_obj::Point_obj() {
 }
 
 void Point_obj::offset(int16_t offsetSteps, float offsetSeconds) {
-  steps += offsetSteps;
-  seconds += offsetSeconds;
+  this->steps += offsetSteps;
+  this->seconds += offsetSeconds;
 }
 
 void Point_obj::set(int32_t setSteps, float setSeconds) {
-  steps = setSteps;
-  seconds = setSeconds;
+  this->steps = setSteps;
+  this->seconds = setSeconds;
 }
 
 void Point_obj::PrintPoint() {
