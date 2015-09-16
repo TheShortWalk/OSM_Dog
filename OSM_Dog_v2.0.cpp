@@ -36,13 +36,15 @@ int main(void)
 
 	Moco.Axis[0].Motion.AddSegment(0);
 	Moco.Axis[0].Motion.Segment[0].start.set(0, 0);
-	Moco.Axis[0].Motion.Segment[0].finish.set(1000, 10);
+	Moco.Axis[0].Motion.Segment[0].finish.set(4000, 10);
 	Moco.Axis[0].Motion.Segment[0].smoothing = 1;
 
 	Moco.Axis[1].Motion.AddSegment(0);
 	Moco.Axis[1].Motion.Segment[0].start.set(0, 0);
-	Moco.Axis[1].Motion.Segment[0].finish.set(-65, 10);
+	Moco.Axis[1].Motion.Segment[0].finish.set(-50, 10);
 	Moco.Axis[1].Motion.Segment[0].smoothing = 1;
+	
+	Moco.frames_timelapse = 200;
 	
 	_delay_ms(1000);
 		
